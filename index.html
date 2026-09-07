@@ -29,9 +29,8 @@
         .app-header { width: 100%; height: 140px; flex-shrink: 0; border-bottom: 2px solid var(--neon-cyan); box-shadow: 0 5px 20px rgba(0, 243, 255, 0.15); z-index: 10; background: #fff; overflow: hidden; }
         .app-header img { width: 100%; height: 100%; object-fit: fill; display: block; }
         
-        .workspace { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; perspective: 900px; }
-        .workspace::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2; background: radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.55) 100%); }
-        .grid-bg { position: absolute; inset: -20% -20% -20% -20%; background-image: linear-gradient(rgba(0,243,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,243,255,0.06) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 0; -webkit-mask-image: radial-gradient(circle at 50% 45%, black 0%, transparent 72%); mask-image: radial-gradient(circle at 50% 45%, black 0%, transparent 72%); transform: rotateX(58deg) translateZ(-80px); transform-origin: 50% 50%; }
+        .workspace { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 0; }
         canvas { width: 100%; height: 100%; position: relative; z-index: 1; display: block; }
         
         /* --- SIDEBAR COMPONENTS --- */
@@ -212,14 +211,6 @@
             <button class="btn btn-cyan" onclick="openPT()" style="padding: 16px; font-size: 1.1rem; margin-bottom: 5px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,243,255,0.2);">📊 باز کردن جدول تناوبی</button>
 
             <div class="menu-section" style="margin-bottom: 5px;">
-                <div class="menu-title">🔎 جستجوی عنصر</div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <input type="text" id="searchInput" class="form-input" placeholder="نام یا نماد یا عدد اتمی..." oninput="searchElement()" autocomplete="off">
-                    <div class="search-results" id="searchResults"></div>
-                </div>
-            </div>
-
-            <div class="menu-section" style="margin-bottom: 5px;">
                 <div class="menu-title">🧪 فرمول‌ساز هوشمند</div>
                 <div class="input-group" style="margin-bottom: 0;">
                     <input type="text" id="formulaInput" class="form-input ltr" placeholder="H2O, C2H4, Ca(OH)2, Al2(SO4)3" onkeypress="if(event.key === 'Enter') parseAndAddFormula()">
@@ -228,13 +219,11 @@
             </div>
 
             <button class="btn btn-cyan" onclick="openLibrary()" style="padding: 14px; font-size: 1.05rem; margin-bottom: 5px; border-radius: 12px; box-shadow: 0 5px 20px rgba(16,185,129,0.15); background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(0,243,255,0.1)); border-color: var(--neon-green);">📚 کتابخانه ترکیبات</button>
-            <div style="display:flex; gap:8px;">
-                <button class="btn" onclick="startTour()" style="padding: 12px; font-size: 0.9rem; margin-bottom: 5px; border-radius: 12px; flex:1;">❓ راهنما</button>
-                <button class="btn" id="voiceToggleBtn" onclick="toggleVoice()" style="padding: 12px; font-size: 0.9rem; margin-bottom: 5px; border-radius: 12px; flex:1;">🔊 صدا: روشن</button>
-            </div>
+            <button class="btn" onclick="startTour()" style="padding: 12px; font-size: 0.9rem; margin-bottom: 5px; border-radius: 12px; width:100%;">❓ راهنما</button>
 
             <div>
                 <button class="btn btn-action" onclick="simulateSmartReaction()">⚡ موازنه و پردازش واکنش</button>
+                <button class="btn" onclick="open3DView()" style="background:linear-gradient(135deg,#1a3a5c,#0d1f33); border:1px solid rgba(0,243,255,0.4);">🧊 نمای سه‌بعدی واقعی</button>
                 <button class="btn btn-danger" onclick="clearLab()">🗑 پاکسازی میز کار</button>
             </div>
         </div>
@@ -256,6 +245,18 @@
             </div>
 
             <canvas id="labCanvas"></canvas>
+
+            <div id="modal3D" style="display:none; position:fixed; inset:0; background:rgba(3,6,12,0.92); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+                <div style="position:relative; width:92vw; height:82vh; max-width:1000px; background:radial-gradient(circle at 50% 30%, #0c1730, #05080f); border:1px solid rgba(0,243,255,0.35); border-radius:18px; overflow:hidden; box-shadow:0 0 60px rgba(0,243,255,0.15);">
+                    <div style="position:absolute; top:14px; right:18px; z-index:10; text-align:right;">
+                        <div id="modal3DTitle" style="color:#0ff; font-weight:bold; font-size:1.15rem; text-shadow:0 0 10px rgba(0,243,255,0.6);"></div>
+                        <div id="modal3DGeo" style="color:#8ecbff; font-size:0.85rem; margin-top:4px;"></div>
+                    </div>
+                    <button onclick="close3DView()" style="position:absolute; top:12px; left:12px; z-index:10; width:36px; height:36px; border-radius:10px; background:rgba(255,60,60,0.15); border:1px solid rgba(255,80,80,0.5); color:#f77; font-size:20px; cursor:pointer; line-height:1;">×</button>
+                    <div id="threeContainer" style="width:100%; height:100%; cursor:grab;"></div>
+                    <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); color:#6b8; font-size:0.78rem; background:rgba(0,0,0,0.4); padding:5px 14px; border-radius:20px;">🖱 بکشید تا بچرخد &nbsp;|&nbsp; اسکرول برای زوم</div>
+                </div>
+            </div>
 
             <div class="dashboard" id="dashboardPanel">
                 <div class="dash-header" style="align-items: center;">
@@ -373,7 +374,7 @@
        ========================================== */
     const tourSteps = [
         {icon:'🧪', title:'به آزمایشگاه شیمی سه‌بعدی خوش آمدید!', body:'در این برنامه می‌توانید اتم‌ها را کنار هم بگذارید و واکنش‌های شیمیایی، ساختار لوویس و نوع پیوند را به‌صورت زنده ببینید. بیایید با هم یک دور کوتاه بزنیم.'},
-        {icon:'📊', title:'۱) افزودن عنصر', body:'از دکمهٔ «باز کردن جدول تناوبی» یا کادر «جستجوی عنصر» استفاده کنید تا عناصر را به میز کار اضافه کنید. روی هر عنصر کلیک کنید تا وارد محیط شود.'},
+        {icon:'📊', title:'۱) افزودن عنصر', body:'از دکمهٔ «باز کردن جدول تناوبی» استفاده کنید تا عناصر را به میز کار اضافه کنید. روی هر عنصر کلیک کنید تا وارد محیط شود.'},
         {icon:'🧪', title:'۲) فرمول‌ساز هوشمند', body:'می‌توانید مستقیماً فرمول یک ترکیب را تایپ کنید (مثل H2O یا Ca(OH)2) و دکمهٔ + را بزنید تا اتم‌هایش ساخته شوند.'},
         {icon:'📚', title:'۳) کتابخانه ترکیبات', body:'اگر نمی‌خواهید فرمول تایپ کنید، از «کتابخانه ترکیبات» بیش از ۱۳۰ ترکیب رایج را با یک کلیک بسازید.'},
         {icon:'⚡', title:'۴) پردازش واکنش', body:'بعد از افزودن اتم‌ها، دکمهٔ «موازنه و پردازش واکنش» را بزنید تا انیمیشن تشکیل پیوند، معادلهٔ موازنه‌شده و ساختار لوویس نمایش داده شود.'},
@@ -443,72 +444,6 @@
         if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    /* ==========================================
-       گفتار فارسی (Text-to-Speech) — آفلاین با Web Speech API
-       ========================================== */
-    let voiceEnabled = true;
-    try { voiceEnabled = localStorage.getItem('chemlab_voice') !== 'off'; } catch(e){}
-    let faVoice = null;
-    let voiceSupported = false; // آیا صدای فارسی/عربی مناسب موجود است؟
-    function pickPersianVoice(){
-        if(!('speechSynthesis' in window)) { voiceSupported = false; updateVoiceButton(); return; }
-        let voices = speechSynthesis.getVoices();
-        if(!voices || voices.length===0) return; // هنوز بارگذاری نشده — منتظر onvoiceschanged
-        // فقط صدای فارسی یا عربی را بپذیر (صدای انگلیسی برای فارسی نامفهوم است)
-        faVoice = voices.find(v=>/fa|persian|farsi/i.test(v.lang+' '+v.name))
-               || voices.find(v=>/^ar|arabic/i.test(v.lang+' '+v.name))
-               || null;
-        voiceSupported = !!faVoice;
-        updateVoiceButton();
-    }
-    function updateVoiceButton(){
-        let btn = document.getElementById('voiceToggleBtn');
-        if(!btn) return;
-        if(!voiceSupported){
-            // صدای فارسی موجود نیست → دکمه غیرفعال و راهنما
-            btn.innerHTML = '🔇 صدا (ناموجود)';
-            btn.style.opacity = '0.55';
-            btn.title = 'صدای فارسی روی این دستگاه نصب نیست';
-        } else {
-            btn.style.opacity = '1';
-            btn.title = '';
-            btn.innerHTML = voiceEnabled ? '🔊 صدا: روشن' : '🔇 صدا: خاموش';
-        }
-    }
-    if('speechSynthesis' in window){
-        pickPersianVoice();
-        speechSynthesis.onvoiceschanged = pickPersianVoice;
-        // برخی مرورگرها صداها را با تأخیر بارگذاری می‌کنند
-        setTimeout(pickPersianVoice, 500);
-        setTimeout(pickPersianVoice, 1500);
-    }
-    function speak(text, opts){
-        // فقط وقتی صدای فارسی/عربی واقعی موجود است بخوان (تا خواندن نامفهوم با صدای انگلیسی رخ ندهد)
-        if(!voiceEnabled || !text || !voiceSupported || !faVoice) return;
-        if(!('speechSynthesis' in window)) return;
-        try{
-            opts = opts || {};
-            if(opts.cancel !== false) speechSynthesis.cancel();
-            let u = new SpeechSynthesisUtterance(text);
-            u.lang = faVoice.lang || 'fa-IR';
-            u.voice = faVoice;
-            u.rate = opts.rate || 0.95;
-            u.pitch = opts.pitch || 1;
-            speechSynthesis.speak(u);
-        }catch(e){}
-    }
-    function toggleVoice(){
-        if(!voiceSupported){
-            // به کاربر توضیح بده چرا صدا کار نمی‌کند
-            showAlert('صدای فارسی روی این دستگاه یا مرورگر نصب نیست، بنابراین قابلیت خواندن با صدا در دسترس نیست.\n\nبرای فعال شدن، یک بستهٔ صدای فارسی (Persian TTS) روی سیستم‌عامل خود نصب کنید. سایر بخش‌های برنامه کاملاً کار می‌کنند.');
-            return;
-        }
-        voiceEnabled = !voiceEnabled;
-        try{ localStorage.setItem('chemlab_voice', voiceEnabled?'on':'off'); }catch(e){}
-        if(!voiceEnabled && 'speechSynthesis' in window) speechSynthesis.cancel();
-        updateVoiceButton();
-        if(voiceEnabled) speak('صدا روشن شد');
-    }
     function playSound(type) {
         try {
             initAudio();
@@ -957,20 +892,37 @@
 
     function calculateDynamicBonds(center, others, counts) {
         window.covalentBonds = [];
-        others.forEach(a => {
-            let order = 1;
-            if(center.data.sym === 'C' && a.data.sym === 'O' && counts['C']==1 && counts['O']==2) order = 2; // CO2
-            if(center.data.sym === 'C' && a.data.sym === 'C' && counts['C']==2 && !counts['H']) order = 2; // C2
-            if(center.data.sym === 'N' && a.data.sym === 'N' && counts['N']==2) order = 3; // N2
-            if(center.data.sym === 'O' && a.data.sym === 'O' && counts['O']==2) order = 2; // O2
-            if(center.data.sym === 'C' && a.data.sym === 'N') order = 3; // HCN
-            if(center.data.sym === 'S' && counts['O']==2) order = 2; // SO2
-            if(center.data.sym === 'S' && counts['O']==3) order = 2; // SO3
-            if(counts['S']==1 && counts['O']==4) order = 1.5; // SO4
-            if(counts['P']==1 && counts['O']==4) order = 1.5; // PO4
-            
-            window.covalentBonds.push({ targetId: a.id, x: a.x, y: a.y, order: order });
-        });
+        let n = others.length;
+        // موارد ویژهٔ مولکول‌های کوچک که همهٔ پیوندهای مرکز به همسایه‌ها مرتبهٔ یکسان دارند
+        let uniformOrder = 1;
+        if(center.data.sym === 'C' && counts['C']==1 && counts['O']==2) uniformOrder = 2; // CO2
+        if(center.data.sym === 'C' && counts['C']==2 && !counts['H']) uniformOrder = 2; // C2
+        if(center.data.sym === 'N' && counts['N']==2) uniformOrder = 3; // N2
+        if(center.data.sym === 'O' && counts['O']==2) uniformOrder = 2; // O2
+        if(center.data.sym === 'C' && others.some(a=>a.data.sym==='N')) uniformOrder = 3; // HCN
+        if(center.data.sym === 'S' && counts['O']==2) uniformOrder = 2; // SO2
+        if(center.data.sym === 'S' && counts['O']==3) uniformOrder = 2; // SO3
+
+        if(uniformOrder > 1){
+            others.forEach(a => window.covalentBonds.push({ targetId: a.id, x: a.x, y: a.y, order: uniformOrder }));
+            return;
+        }
+
+        // بنیان‌های چنداتمی با ۳+ اکسیژن پیرامونی (سولفات، فسفات، کربنات، نیترات، پرمنگنات...):
+        // مرتبهٔ پیوند بر اساس ظرفیت مؤثر اتم مرکزی توزیع می‌شود (مثلاً سولفات: ۲ پیوند دوگانه + ۲ یگانه)
+        // نه یک عدد یکسان و میانگین (۱.۵) روی هر ۴ پیوند که باعث می‌شد هر چهار پیوند یکسان دیده شوند
+        const _polyMaxV = {S:6, P:5, N:4, C:4, Cl:7, Cr:6, Mn:8, Se:6, Br:7, I:7};
+        if(n >= 3 && others.every(a=>a.data.sym==='O')){
+            let maxV = _polyMaxV[center.data.sym] || 4;
+            let freeV = maxV - n;
+            others.forEach((a,i) => {
+                let order = (i < freeV) ? 2 : 1;
+                window.covalentBonds.push({ targetId: a.id, x: a.x, y: a.y, order: order });
+            });
+            return;
+        }
+
+        others.forEach(a => window.covalentBonds.push({ targetId: a.id, x: a.x, y: a.y, order: 1 }));
     }
 
     /* ==========================================
@@ -1069,6 +1021,236 @@
         return {bonds, backbone: backboneIdx};
     }
 
+    // ===== اکسو-اسیدها (H2SO4, HNO3, H3PO4, H2CO3, HClOx, H2SeO4) =====
+    // در این ترکیبات، هیدروژن هرگز مستقیم به اتم مرکزی وصل نمی‌شود؛ بلکه از طریق یک اکسیژن پل می‌خورد
+    // (ساختار واقعی مثلاً H2SO4: H-O-S(=O)2-O-H، نه H مستقیم روی S)
+    const _oxoacidCenters = ['N','P','S','Cl','Br','I','Se'];
+    function isOxoacidPattern(atoms) {
+        let syms = atoms.map(a=>a.data.sym);
+        if(!syms.includes('H') || !syms.includes('O')) return false;
+        let heavyNonO = atoms.filter(a=>a.data.sym!=='H' && a.data.sym!=='O');
+        if(heavyNonO.length !== 1) return false;
+        let centerSym = heavyNonO[0].data.sym;
+        if(_oxoacidCenters.includes(centerSym)) return true;
+        // کربنیک اسید (H2CO3) تنها استثنای کربنی، چون فرمولش یکتا و بدون ابهام است
+        // (بر خلاف متانول/فرمالدهید/اسید فرمیک که با همین اتم‌ها جای H متفاوتی دارند)
+        if(centerSym === 'C') {
+            let hCount = syms.filter(s=>s==='H').length, oCount = syms.filter(s=>s==='O').length;
+            return hCount===2 && oCount===3;
+        }
+        return false;
+    }
+    const _oxoacidMaxValence = {N:4, C:4, S:6, P:5, Cl:7, Br:7, I:7, Se:6};
+    function buildOxoacidGraph(atoms){
+        let centerIdx = atoms.findIndex(a=>a.data.sym!=='H' && a.data.sym!=='O');
+        let oIdxs = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='O');
+        let hIdxs = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        let bridgeCount = Math.min(hIdxs.length, oIdxs.length);
+        let bridgeO = oIdxs.slice(0, bridgeCount), terminalO = oIdxs.slice(bridgeCount);
+        let bridgeH = hIdxs.slice(0, bridgeCount), extraH = hIdxs.slice(bridgeCount);
+        let bonds = [];
+        bridgeO.forEach((oi, i) => { bonds.push({a:centerIdx, b:oi, order:1}); bonds.push({a:oi, b:bridgeH[i], order:1}); });
+        terminalO.forEach(oi => bonds.push({a:centerIdx, b:oi, order:1}));
+        extraH.forEach(hi => bonds.push({a:centerIdx, b:hi, order:1}));
+
+        // اکسیژن‌های ترمینال (بدون H) را بر اساس ظرفیت مؤثر مرکز به پیوند دوگانه ارتقا بده
+        let centerSym = atoms[centerIdx].data.sym;
+        let maxV = _oxoacidMaxValence[centerSym] || (typicalValence[centerSym]||4);
+        let usedV = bridgeO.length + terminalO.length + extraH.length;
+        let freeV = maxV - usedV;
+        for(let oi of terminalO){
+            if(freeV <= 0) break;
+            let bd = bonds.find(b => (b.a===centerIdx && b.b===oi) || (b.b===centerIdx && b.a===oi));
+            if(bd && bd.order < 2){ bd.order = 2; freeV--; }
+        }
+        return { bonds, backbone:[centerIdx], center:centerIdx, bridgeO, terminalO, bridgeH, extraH };
+    }
+    function layoutOxoacidMolecule(atoms, graph, cx, cy){
+        let n = atoms.length, pos = new Array(n).fill(null), bondLen = 110;
+        pos[graph.center] = {x: cx, y: cy};
+        let allO = [...graph.bridgeO, ...graph.terminalO];
+        let total = allO.length || 1;
+        allO.forEach((oi, i) => {
+            let angle = (i/total)*Math.PI*2 - Math.PI/2;
+            pos[oi] = {x: cx + Math.cos(angle)*bondLen, y: cy + Math.sin(angle)*bondLen};
+        });
+        graph.bridgeO.forEach((oi, i) => {
+            let ang = Math.atan2(pos[oi].y-cy, pos[oi].x-cx);
+            pos[graph.bridgeH[i]] = {x: pos[oi].x + Math.cos(ang)*85, y: pos[oi].y + Math.sin(ang)*85};
+        });
+        graph.extraH.forEach((hi, i) => {
+            let angle = Math.PI + (i/(graph.extraH.length||1))*Math.PI*0.6 - 0.3;
+            pos[hi] = {x: cx + Math.cos(angle)*90, y: cy + Math.sin(angle)*90};
+        });
+        atoms.forEach((a,i)=>{ if(!pos[i]) pos[i] = {x: cx + (i-n/2)*90, y: cy+140}; });
+        return pos;
+    }
+
+    // ===== متانول CH3OH (C:1,H:4,O:1) =====
+    function isMethanolPattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===1 && syms.filter(s=>s==='O').length===1 && syms.filter(s=>s==='H').length===4 && syms.length===6;
+    }
+    function buildMethanolGraph(atoms){
+        let c = atoms.findIndex(a=>a.data.sym==='C');
+        let o = atoms.findIndex(a=>a.data.sym==='O');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        let bonds = [
+            {a:c, b:o, order:1},
+            {a:c, b:h[0], order:1}, {a:c, b:h[1], order:1}, {a:c, b:h[2], order:1},
+            {a:o, b:h[3], order:1},
+        ];
+        return {bonds, backbone:[c,o]};
+    }
+
+    // ===== فرمالدهید HCHO (C:1,H:2,O:1) =====
+    function isFormaldehydePattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===1 && syms.filter(s=>s==='O').length===1 && syms.filter(s=>s==='H').length===2 && syms.length===4;
+    }
+    function buildFormaldehydeGraph(atoms){
+        let c = atoms.findIndex(a=>a.data.sym==='C');
+        let o = atoms.findIndex(a=>a.data.sym==='O');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        let bonds = [ {a:c, b:o, order:2}, {a:c, b:h[0], order:1}, {a:c, b:h[1], order:1} ];
+        return {bonds, backbone:[c]};
+    }
+
+    // ===== اسید فرمیک HCOOH (C:1,H:2,O:2) =====
+    function isFormicAcidPattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===1 && syms.filter(s=>s==='O').length===2 && syms.filter(s=>s==='H').length===2 && syms.length===5;
+    }
+    function buildFormicAcidGraph(atoms){
+        let c = atoms.findIndex(a=>a.data.sym==='C');
+        let o = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='O');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        // C: یک H مستقیم (فرمیل) + یک O دوگانه (کربونیل) + یک O یگانه (که به H دیگر وصل است)
+        let bonds = [
+            {a:c, b:o[0], order:2}, {a:c, b:o[1], order:1}, {a:o[1], b:h[0], order:1}, {a:c, b:h[1], order:1},
+        ];
+        return {bonds, backbone:[c]};
+    }
+
+    // ===== اسید استیک CH3COOH (C:2,H:4,O:2) =====
+    function isAceticAcidPattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===2 && syms.filter(s=>s==='O').length===2 && syms.filter(s=>s==='H').length===4 && syms.length===8;
+    }
+    function buildAceticAcidGraph(atoms){
+        let c = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='C');
+        let o = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='O');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        let c1=c[0], c2=c[1]; // c1: متیل، c2: کربوکسیل
+        let bonds = [
+            {a:c1, b:c2, order:1},
+            {a:c1, b:h[0], order:1}, {a:c1, b:h[1], order:1}, {a:c1, b:h[2], order:1},
+            {a:c2, b:o[0], order:2}, {a:c2, b:o[1], order:1}, {a:o[1], b:h[3], order:1},
+        ];
+        return {bonds, backbone:[c1,c2]};
+    }
+
+    // ===== تولوئن C7H8 (حلقهٔ بنزن + یک گروه متیل) =====
+    function isToluenePattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===7 && syms.filter(s=>s==='H').length===8 && syms.length===15;
+    }
+    function buildTolueneGraph(atoms){
+        let c = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='C');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        let ring = c.slice(0,6), methylC = c[6];
+        let bonds = [];
+        for(let k=0;k<6;k++) bonds.push({a:ring[k], b:ring[(k+1)%6], order:(k%2===0)?2:1});
+        bonds.push({a:ring[0], b:methylC, order:1}); // کربن اول حلقه به‌جای H، به متیل وصل است
+        for(let k=1;k<6;k++) bonds.push({a:ring[k], b:h[k-1], order:1}); // ۵ کربن دیگر حلقه هرکدام ۱ H
+        bonds.push({a:methylC, b:h[5], order:1}, {a:methylC, b:h[6], order:1}, {a:methylC, b:h[7], order:1}); // متیل ۳ H
+        return {bonds, ring, methylC};
+    }
+    function layoutTolueneMolecule(atoms, graph, cx, cy){
+        let n = atoms.length, pos = new Array(n).fill(null);
+        let ringR = 90, hDist = 60;
+        let ringAngle = k => -Math.PI/2 + k*(Math.PI*2/6);
+        graph.ring.forEach((ci, k) => { let a=ringAngle(k); pos[ci] = {x: cx+Math.cos(a)*ringR, y: cy+Math.sin(a)*ringR}; });
+        // ساده‌ترین اتصال بیرونی هر کربن حلقه (H یا متیل) در همان امتداد شعاعی، بیرون از حلقه
+        graph.bonds.forEach(b=>{
+            let ringSide = graph.ring.includes(b.a) ? b.a : (graph.ring.includes(b.b) ? b.b : null);
+            let other = ringSide===b.a ? b.b : b.a;
+            if(ringSide===null || pos[other] || graph.ring.includes(other)) return;
+            let k = graph.ring.indexOf(ringSide), a = ringAngle(k);
+            let dist = other===graph.methylC ? hDist*1.3 : hDist;
+            pos[other] = {x: cx+Math.cos(a)*(ringR+dist), y: cy+Math.sin(a)*(ringR+dist)};
+        });
+        // سه H روی متیل: دور خودِ کربن متیل پخش کن
+        let mpos = pos[graph.methylC];
+        if(mpos){
+            let mIdx = graph.ring.indexOf(0); // بی‌اثر، فقط برای خوانایی
+            let baseAngle = Math.atan2(mpos.y-cy, mpos.x-cx);
+            let hOnMethyl = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H' && !pos[i]);
+            hOnMethyl.forEach((hi, j) => {
+                let a = baseAngle + (j-1)*0.9;
+                pos[hi] = {x: mpos.x+Math.cos(a)*55, y: mpos.y+Math.sin(a)*55};
+            });
+        }
+        atoms.forEach((a,i)=>{ if(!pos[i]) pos[i] = {x: cx, y: cy}; });
+        return pos;
+    }
+
+    // ===== دی‌بوران B2H6 (پیوند پل‌زن سه‌مرکزی-دوالکترونی) =====
+    // برخلاف همهٔ مولکول‌های دیگر، اینجا دو هیدروژن هرکدام هم‌زمان به هر دو اتم بور وصل‌اند
+    // (نه یک پیوند معمولی دو-مرکزی)؛ الگوریتم عمومی اسکلت اصلاً نمی‌تواند این را نمایش دهد
+    function isDiboranePattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='B').length===2 && syms.filter(s=>s==='H').length===6 && syms.length===8;
+    }
+    function buildDiboraneGraph(atoms){
+        let b = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='B');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        // h[0],h[1]: پایانی روی B1 | h[2],h[3]: پایانی روی B2 | h[4],h[5]: پل‌زن (هرکدام به هر دو بور وصل)
+        let bonds = [
+            {a:b[0], b:h[0], order:1}, {a:b[0], b:h[1], order:1},
+            {a:b[1], b:h[2], order:1}, {a:b[1], b:h[3], order:1},
+            {a:b[0], b:h[4], order:1}, {a:b[1], b:h[4], order:1},
+            {a:b[0], b:h[5], order:1}, {a:b[1], b:h[5], order:1},
+        ];
+        return {b, h, bonds, bridgeH:[h[4],h[5]], termH:[h[0],h[1],h[2],h[3]]};
+    }
+    function layoutDiboraneMolecule(atoms, graph, cx, cy){
+        let n = atoms.length, pos = new Array(n).fill(null);
+        let bLen = 140, bridgeOffset = 55, tdx = 55, tdy = 95;
+        pos[graph.b[0]] = {x: cx - bLen/2, y: cy};
+        pos[graph.b[1]] = {x: cx + bLen/2, y: cy};
+        pos[graph.bridgeH[0]] = {x: cx, y: cy - bridgeOffset};
+        pos[graph.bridgeH[1]] = {x: cx, y: cy + bridgeOffset};
+        pos[graph.termH[0]] = {x: cx - bLen/2 - tdx, y: cy - tdy};
+        pos[graph.termH[1]] = {x: cx - bLen/2 - tdx, y: cy + tdy};
+        pos[graph.termH[2]] = {x: cx + bLen/2 + tdx, y: cy - tdy};
+        pos[graph.termH[3]] = {x: cx + bLen/2 + tdx, y: cy + tdy};
+        return pos;
+    }
+
+    // ===== پروپاین (C3H4) =====
+    // الگوریتم عمومی اسکلت، H ها را یکنواخت پخش می‌کند و سپس فقط با ظرفیت باقی‌مانده، مرتبهٔ پیوند را ارتقا می‌دهد؛
+    // برای پروپاین این باعث می‌شود کربن انتهایی متیل (که باید ۳ H بگیرد) ظرفیت لازم برای پیوند سه‌گانه را
+    // از کربن‌های آلکاینی بگیرد و به‌جای H-C≡C-CH3 غلط یک پیوند دوگانه با توزیع اشتباه H بسازد
+    function isPropynePattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===3 && syms.filter(s=>s==='H').length===4 && syms.length===7;
+    }
+    function buildPropyneGraph(atoms){
+        let c = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='C');
+        let h = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        // c[0]≡c[1]-c[2](H3)، و c[0] یک H انتهایی آلکاینی دارد
+        let bonds = [
+            {a:c[0], b:c[1], order:3},
+            {a:c[1], b:c[2], order:1},
+            {a:c[0], b:h[0], order:1},
+            {a:c[2], b:h[1], order:1},
+            {a:c[2], b:h[2], order:1},
+            {a:c[2], b:h[3], order:1},
+        ];
+        return {bonds, backbone:c};
+    }
+
     // چیدمان مختصات مولکول بر اساس گراف (اسکلت افقی + جانبی‌ها اطراف)
     function layoutMolecule(atoms, graph, cx, cy){
         let {bonds, backbone} = graph;
@@ -1097,6 +1279,7 @@
                 if(cnt===1) angle = -Math.PI/2;
                 else if(cnt===2) angle = (j===0? -Math.PI/2 : Math.PI/2);
                 else if(cnt===3) angle = -Math.PI/2 + (j)*(Math.PI*2/3);
+                else if(cnt===4) angle = [Math.PI*0.25, Math.PI*0.75, Math.PI*1.25, Math.PI*1.75][j]; // چهاروجهی (مثل کربن با ۴ استخلاف)
                 else angle = (j/cnt)*Math.PI*2;
                 let dist = 120;
                 pos[ni] = {x: pos[bi].x + Math.cos(angle)*dist, y: pos[bi].y + Math.sin(angle)*dist};
@@ -1111,23 +1294,6 @@
     /* ==========================================
        2. UI FUNCTIONS
        ========================================== */
-    function searchElement() {
-        const q = document.getElementById('searchInput').value.trim().toLowerCase();
-        const resBox = document.getElementById('searchResults'); resBox.innerHTML = '';
-        if(q.length === 0) { resBox.style.display = 'none'; return; }
-        let matches = Object.values(db).filter(el => el.sym.toLowerCase().includes(q) || el.name.toLowerCase().includes(q) || el.z.toString() === q).slice(0, 10);
-        if(matches.length > 0) {
-            resBox.style.display = 'block';
-            matches.forEach(m => {
-                let div = document.createElement('div'); div.className = 'search-item';
-                div.innerHTML = `<span class="sym">${m.sym}</span><span class="name">${m.name} (Z: ${m.z})</span>`;
-                div.onclick = () => { addAtom(m.z); resBox.style.display = 'none'; document.getElementById('searchInput').value = ''; };
-                resBox.appendChild(div);
-            });
-        } else resBox.style.display = 'none';
-    }
-    document.addEventListener('click', (e) => { let sr = document.getElementById('searchResults'); if(sr && !e.target.closest('.input-group') && !e.target.closest('.search-results')) sr.style.display = 'none'; });
-
     function getPtPos(z) {
         if(z===1) return {c:1, r:1}; if(z===2) return {c:18, r:1};
         if(z>=3 && z<=10) return {c: z<5 ? z-2 : z+8, r:2};
@@ -1358,45 +1524,12 @@
     const canvas = document.getElementById('labCanvas');
     const ctx = canvas.getContext('2d');
     let W, H;
-    function resize() { W=canvas.width=canvas.parentElement.clientWidth; H=canvas.height=canvas.parentElement.clientHeight; initStars(); }
-    window.addEventListener('resize', resize);
+    function resize() { W=canvas.width=canvas.parentElement.clientWidth; H=canvas.height=canvas.parentElement.clientHeight; }
+    window.addEventListener('resize', resize); resize();
 
     const catColors = { 'alkali':'#ff3366', 'alkaline':'#ff9933', 'transition':'#ffcc00', 'nonmetal':'#00e676', 'halogen':'#00e5ff', 'noble':'#b000ff', 'metalloid':'#00bfa5', 'other':'#f50057' };
     let labAtoms = []; let movingElectrons = []; let appState = 'idle';
     let reactionFX = []; // ذرات افکت واکنش (جرقه، حباب، درخشش)
-
-    /* ==========================================
-       ابزارهای کمکی گرافیک شبه‌سه‌بعدی
-       ========================================== */
-    // روشن/تیره کردن یک رنگ هگز برای ساخت گرادیان‌های حجم‌دار (نورپردازی کره‌ای)
-    function shadeColor(hex, percent){
-        let f = parseInt(hex.slice(1),16), t = percent<0 ? 0 : 255, p = Math.abs(percent)/100;
-        let R = f>>16, G = f>>8 & 0x00FF, B = f & 0x0000FF;
-        return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
-    }
-
-    // میدان ستاره‌های پس‌زمینه با پارالاکس و چشمک‌زدن برای عمق بصری صحنه
-    let stars = [];
-    function initStars(){
-        stars = [];
-        let count = Math.max(40, Math.floor((W*H)/9000));
-        for(let i=0;i<count;i++){
-            stars.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+0.4, phase:Math.random()*Math.PI*2, speed:0.3+Math.random()*0.7, depth:0.3+Math.random()*0.7 });
-        }
-    }
-    function drawStars(){
-        let t = Date.now()/1000;
-        for(let s of stars){
-            let tw = 0.35 + 0.65*((Math.sin(t*s.speed + s.phase)+1)/2);
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r*s.depth, 0, Math.PI*2);
-            ctx.fillStyle = `rgba(180,230,255,${(tw*0.7*s.depth).toFixed(3)})`;
-            ctx.shadowBlur = 6*s.depth; ctx.shadowColor = 'rgba(0,243,255,0.6)';
-            ctx.fill();
-        }
-        ctx.shadowBlur = 0;
-    }
-    resize();
 
     /* ==========================================
        افکت‌های بصری مخصوص نوع واکنش
@@ -1425,17 +1558,9 @@
             this.life-=this.decay;
             if(this.life<=0) return true;
             ctx.save(); ctx.globalAlpha=Math.max(0,this.life);
-            let sz = this.size*(this.kind==='bubble'?this.life:1);
-            ctx.beginPath(); ctx.arc(this.x,this.y,sz,0,Math.PI*2);
-            if(this.kind==='bubble'){
-                ctx.strokeStyle=this.color; ctx.lineWidth=1.5; ctx.stroke();
-                ctx.beginPath(); ctx.arc(this.x-sz*0.3, this.y-sz*0.3, sz*0.28, 0, Math.PI*2);
-                ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.fill();
-            } else {
-                let pg = ctx.createRadialGradient(this.x-sz*0.3, this.y-sz*0.3, 0, this.x, this.y, sz);
-                pg.addColorStop(0, '#ffffff'); pg.addColorStop(0.45, this.color); pg.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle=pg; ctx.shadowBlur=12; ctx.shadowColor=this.color; ctx.fill();
-            }
+            ctx.beginPath(); ctx.arc(this.x,this.y,this.size*(this.kind==='bubble'?this.life:1),0,Math.PI*2);
+            if(this.kind==='bubble'){ ctx.strokeStyle=this.color; ctx.lineWidth=1.5; ctx.stroke(); }
+            else { ctx.fillStyle=this.color; ctx.shadowBlur=12; ctx.shadowColor=this.color; ctx.fill(); }
             ctx.restore();
             return false;
         }
@@ -1494,43 +1619,14 @@
             ctx.beginPath(); ctx.arc(this.x, this.y, this.radius + 20, 0, Math.PI*2); ctx.fill();
             ctx.globalAlpha = 1;
 
-            /* ---- بدنه‌ی کروی با نورپردازی حجم‌دار (شبه سه‌بعدی) ---- */
-            let lightX = this.x - this.radius*0.35, lightY = this.y - this.radius*0.42;
-            let sphereGrad = ctx.createRadialGradient(lightX, lightY, this.radius*0.05, this.x, this.y, this.radius*1.15);
-            sphereGrad.addColorStop(0, shadeColor(this.color, 55));
-            sphereGrad.addColorStop(0.45, shadeColor(this.color, -20));
-            sphereGrad.addColorStop(1, '#050509');
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-            ctx.fillStyle = sphereGrad; ctx.fill();
-
-            // سایه‌ی حجمی سمت پایین/راست برای تقویت حس کرویت
-            ctx.save();
-            ctx.globalCompositeOperation = 'multiply';
-            let volShadow = ctx.createRadialGradient(this.x+this.radius*0.55, this.y+this.radius*0.55, 0, this.x, this.y, this.radius*1.3);
-            volShadow.addColorStop(0, 'rgba(0,0,0,0)');
-            volShadow.addColorStop(1, 'rgba(0,0,0,0.65)');
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-            ctx.fillStyle = volShadow; ctx.fill();
-            ctx.restore();
-
-            // خط دور (rim light) با رنگ دسته‌ی عنصر
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            let grad = ctx.createLinearGradient(this.x - this.radius, this.y - this.radius, this.x + this.radius, this.y + this.radius);
+            grad.addColorStop(0, '#2a2a35'); grad.addColorStop(1, '#050509');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = this.color; ctx.lineWidth = 2.5; ctx.stroke();
 
-            // درخشش شیشه‌ای (specular highlight) بالا-چپ، مثل نور تابیده به یک کره‌ی براق
-            ctx.save();
-            ctx.beginPath();
-            ctx.ellipse(lightX, lightY, this.radius*0.32, this.radius*0.2, -0.6, 0, Math.PI*2);
-            let specGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, this.radius*0.35);
-            specGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
-            specGrad.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = specGrad; ctx.fill();
-            ctx.restore();
-
             ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Tahoma'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(0,0,0,0.8)';
             ctx.fillText(this.data.sym, this.x, this.y + 1);
-            ctx.shadowBlur = 0;
 
             if(this.charge !== 0) {
                 let sign = this.charge>0 ? '+' : '-'; let val = Math.abs(this.charge)>1 ? Math.abs(this.charge) : '';
@@ -1538,44 +1634,25 @@
                 ctx.fillText(val+sign, this.x + this.radius + 12, this.y - this.radius + 5);
             }
 
-            /* ---- مدارهای الکترونی به‌صورت بیضی‌های کج‌شده برای حس عمق سه‌بعدی ---- */
             let t = Date.now()/1000;
             for(let i=0; i<this.shells.length; i++) {
                 if(this.shells[i]<=0) continue;
                 let r = this.radius + (i+1)*this.gap;
-                let tiltRy = r * (0.38 + (i%3)*0.09);           // فشردگی عمودی مدار → حس چرخش سه‌بعدی
-                let tiltRot = (i%2===0 ? -0.24 : 0.24) + i*0.035; // زاویه‌ی متفاوت هر لایه برای تنوع عمق
-
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(tiltRot);
-                ctx.beginPath(); ctx.ellipse(0, 0, r, tiltRy, 0, 0, Math.PI*2);
+                
+                ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI*2);
                 ctx.strokeStyle = 'rgba(0, 243, 255, 0.25)';
                 ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.stroke(); ctx.setLineDash([]);
-                ctx.restore();
-
-                let cosT = Math.cos(tiltRot), sinT = Math.sin(tiltRot);
+                
                 let speed = 0.8 - (i*0.1);
                 for(let j=0; j<this.shells[i]; j++) {
                     let a = this.angles[i][j] + (t * speed);
-                    let depth = Math.sin(a); // مقدار شبه-عمق: -1 (پشت) تا 1 (جلو)
-                    let ex0 = Math.cos(a)*r, ey0 = Math.sin(a)*tiltRy;
-                    let ex = this.x + ex0*cosT - ey0*sinT;
-                    let ey = this.y + ex0*sinT + ey0*cosT;
-                    let dScale = 0.7 + (depth+1)/2*0.6;
-                    let dAlpha = 0.55 + (depth+1)/2*0.45;
-
-                    ctx.save();
-                    ctx.globalAlpha = dAlpha;
-                    let eGrad = ctx.createRadialGradient(ex-1.5, ey-1.5, 0, ex, ey, 4.5*dScale);
-                    eGrad.addColorStop(0, '#ffffff'); eGrad.addColorStop(1, '#00c3d8');
-                    ctx.beginPath(); ctx.arc(ex, ey, 4.5*dScale, 0, Math.PI*2);
-                    ctx.fillStyle = eGrad; ctx.shadowBlur = 15*dScale; ctx.shadowColor = '#00f3ff';
-                    ctx.fill();
-                    ctx.restore();
+                    let ex = this.x + Math.cos(a)*r; let ey = this.y + Math.sin(a)*r;
+                    
+                    ctx.beginPath(); ctx.arc(ex, ey, 4.5, 0, Math.PI*2);
+                    ctx.fillStyle = '#fff'; ctx.shadowBlur = 15; ctx.shadowColor = '#00f3ff';
+                    ctx.fill(); ctx.shadowBlur = 0;
                 }
             }
-            ctx.shadowBlur = 0;
             ctx.restore();
         }
     }
@@ -1756,7 +1833,6 @@
 
     function clearLab() {
         labAtoms = []; movingElectrons = []; reactionFX = []; appState = 'idle';
-        if('speechSynthesis' in window) speechSynthesis.cancel();
         window.molecularBonds = []; window.covalentBonds = []; window.hasPolyatomicIon = false;
         let panel = document.getElementById('dashboardPanel');
         panel.style.display = 'none'; panel.classList.remove('minimizing');
@@ -1766,11 +1842,6 @@
     function updateUI() { document.getElementById('atomCount').innerText = `Atoms: ${labAtoms.length}`; }
     function setStatus(msg) {
         document.getElementById('sysStatus').innerText = msg;
-        // توضیح صوتی مراحل واکنش (فقط پیام‌های مرحله‌ای مهم، نه پیام‌های سیستمی)
-        if(msg && (msg.includes('مرحله') || msg.includes('پردازش پیوند') || msg.includes('هم‌پوشانی'))){
-            let clean = msg.replace(/\.\.\.$/,'').replace(/[()]/g,' ').replace(/مرحله ۱|مرحله ۲|مرحله ۳|مرحله ۴|مرحله ۵/g, m=>m).trim();
-            speak(clean, {cancel:true});
-        }
     }
 
     function sortSymbols(symbols) {
@@ -2021,6 +2092,64 @@
         return {ok:false, msg:`این واکنش از نظر بار متعادل نیست! مجموع بار مثبت (+${posTotal}) با بار منفی (−${negTotal}) برابر نیست. تعداد اتم‌ها را اصلاح کنید.`};
     }
 
+    // زوایای هندسی VSEPR برای چیدمان اتم‌های پیرامونی دور اتم مرکزی یک بنیان چنداتمی (آنیون)
+    // مثال‌ها: سولفات/فسفات (۴ پیرامونی) → چهاروجهی | کربنات/نیترات (۳ پیرامونی) → مسطح مثلثی | سولفیت (۳ پیرامونی، مرکز S) → هرم مثلثی
+    function vseprAnglesIon(centerSym, count) {
+        if(count <= 1) return { angles: [0], geoName: 'خطی (Linear)' };
+        if(count === 2) return { angles: [0, Math.PI], geoName: 'خطی (Linear)' };
+        if(count === 3) {
+            // بنیان‌هایی با مرکز گوگرد (مثل سولفیت SO3^2-) به‌خاطر جفت‌الکترون ناپیوندی روی S، هرمی هستند
+            if(centerSym === 'S') return { angles: [Math.PI/2, Math.PI/2 + 2.3, Math.PI/2 - 2.3], geoName: 'هرم مثلثی (Trigonal Pyramidal)' };
+            // کربنات، نیتریت/نیترات و مشابه: مسطح مثلثی
+            return { angles: [Math.PI/2, Math.PI/2 + 2.09, Math.PI/2 - 2.09], geoName: 'مسطح مثلثی (Trigonal Planar)' };
+        }
+        if(count === 4) return { angles: [Math.PI*0.25, Math.PI*0.75, Math.PI*1.25, Math.PI*1.75], geoName: 'چهاروجهی (Tetrahedral)' };
+        let angles = []; for(let i=0;i<count;i++) angles.push((i/count)*Math.PI*2);
+        return { angles, geoName: 'چندوجهی ساختاریافته' };
+    }
+
+    // اتم مرکزی واقعی یک بنیان/خوشه یا یک مولکول تک‌مرکزی را پیدا کن — مستقل از ترتیب افزودن اتم‌ها به محیط
+    // (اکسیژن وقتی اتم مرکزی قوی‌تری مثل S/P/N/C/Cl/Cr/Mn حضور دارد، پیرامونی است؛ ولی اگر تنها ناهم‌جنس
+    // موجود خودِ اکسیژن باشد -مثل آب H2O- باید همان اکسیژن مرکز شود، نه اولین اتم آرایه به‌طور اتفاقی)
+    function findHeteroCenter(atoms) {
+        return atoms.find(a=>['S','P','N','C','Cl','Cr','Mn','Si','B'].includes(a.data.sym))
+            || atoms.find(a=>a.data.sym==='O')
+            || atoms[0];
+    }
+
+    // ===== بنزن (حلقهٔ آروماتیک) =====
+    // موتور عمومی اسکلت را به‌صورت زنجیرهٔ خطی می‌سازد که برای بنزن غلط است؛ ساختار واقعی یک حلقهٔ ۶ضلعی
+    // با پیوندهای متناوب یگانه/دوگانه (ککوله) است و هر کربن دقیقاً یک هیدروژن دارد
+    function isBenzenePattern(atoms){
+        let syms = atoms.map(a=>a.data.sym);
+        return syms.filter(s=>s==='C').length===6 && syms.filter(s=>s==='H').length===6 && syms.length===12;
+    }
+    function buildBenzeneGraph(atoms){
+        let cIdxs = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='C');
+        let hIdxs = atoms.map((a,i)=>i).filter(i=>atoms[i].data.sym==='H');
+        let bonds = [];
+        for(let k=0;k<6;k++){
+            bonds.push({a:cIdxs[k], b:cIdxs[(k+1)%6], order: (k%2===0)?2:1}); // پیوندهای متناوب یگانه/دوگانهٔ ککوله
+            bonds.push({a:cIdxs[k], b:hIdxs[k], order:1});
+        }
+        return { bonds, backbone: cIdxs, ring: cIdxs };
+    }
+    function layoutBenzeneMolecule(atoms, graph, cx, cy){
+        let n = atoms.length, pos = new Array(n).fill(null);
+        let ringR = 90, hDist = 60;
+        graph.ring.forEach((ci, k) => {
+            let angle = -Math.PI/2 + k*(Math.PI*2/6);
+            pos[ci] = {x: cx + Math.cos(angle)*ringR, y: cy + Math.sin(angle)*ringR};
+            let hb = graph.bonds.find(b => (b.a===ci||b.b===ci) && atoms[b.a===ci?b.b:b.a].data.sym==='H');
+            if(hb){
+                let hIdx = hb.a===ci ? hb.b : hb.a;
+                pos[hIdx] = {x: cx + Math.cos(angle)*(ringR+hDist), y: cy + Math.sin(angle)*(ringR+hDist)};
+            }
+        });
+        atoms.forEach((a,i)=>{ if(!pos[i]) pos[i] = {x: cx, y: cy}; });
+        return pos;
+    }
+
     function simulateSmartReaction() {
         closeSidebarMobile();
         if(labAtoms.length < 2) return showAlert('برای پردازش یک واکنش، حداقل دو اتم وارد محیط کنید.');
@@ -2030,6 +2159,13 @@
         let metals = labAtoms.filter(a=>a.type==='metal'); let nonmetals = labAtoms.filter(a=>a.type==='nonmetal');
 
         if(labAtoms.some(a=>a.type==='noble')) return showAlert('گازهای نجیب لایه ظرفیت کامل دارند و در شرایط عادی در هیچ واکنشی شرکت نمی‌کنند.');
+
+        // فلز + فلز (بدون هیچ نافلزی): در این مدل هیچ پیوند یونی یا کووالانسی‌ای بین دو فلز شکل نمی‌گیرد
+        // (فلزها با هم پیوند فلزی/آلیاژ تشکیل می‌دهند که موضوع جداگانه‌ای است، نه واکنش انتقال/اشتراک الکترون اینجا)
+        if(metals.length>0 && nonmetals.length===0){
+            let names = [...new Set(labAtoms.map(a=>a.data.name))].join(' و ');
+            return showAlert(`این عنصرها (${names}) با هم واکنش شیمیایی نمی‌دهند. هر دو فلز هستند و پیوند یونی نیاز به یک فلز و یک نافلز دارد؛ فلزها در کنار هم فقط پیوند فلزی (آلیاژ) می‌سازند که در این محیط شبیه‌سازی نمی‌شود.`);
+        }
 
         // اعتبارسنجی استوکیومتری برای پیوند یونی (مثلاً MgF نامعتبر است → MgF2 لازم)
         if(metals.length>0 && nonmetals.length>0){
@@ -2041,7 +2177,7 @@
         let sig = getSig(initialSymbolsForEq);
         appState = 'animating';
 
-        let centerNode = nonmetals.find(a=>['C','Si','N','P','S','O','Cr','Mn'].includes(a.data.sym)) || nonmetals[0];
+        let centerNode = findHeteroCenter(nonmetals);
         if(centerNode) calculateDynamicBonds(centerNode, nonmetals.filter(a=>a.id!==centerNode.id), counts);
         // پاک کردن پیوندهای چند-مرکزی مولکول قبلی (تا در واکنش یونی/تک‌مرکزی تداخل نکند و خطوط بنیان درست رسم شوند)
         window.molecularBonds = []; window.hasPolyatomicIon = false;
@@ -2078,11 +2214,30 @@
             window.hasPolyatomicIon = isPolyatomic; // برای حفظ خطوط بنیان در حالت نهایی
 
             if (isPolyatomic) {
-                setStatus('مرحله ۱: تشکیل بنیان چنداتمی... (نزدیک شدن اتم‌های نافلز)');
+                setStatus('مرحله ۱: ابتدا بنیان چنداتمی با پیوند اشتراکی شکل می‌گیرد؛ کاتیون فلزی کناری منتظر می‌ماند...');
                 appState = 'animating_polyatomic'; 
                 
-                let polyCenter = nonmetals.find(a=>['S','C','N','P','Cr','Mn'].includes(a.data.sym)) || nonmetals[0];
+                let polyCenter = findHeteroCenter(nonmetals);
                 let polyOthers = nonmetals.filter(a=>a.id!==polyCenter.id);
+
+                // بنیان‌های اسیدی نیمه‌خنثی‌شده (مثل بی‌کربنات در جوش‌شیرین NaHCO3): هیدروژن باید کنار یک
+                // اکسیژن مشخص (پل) بنشیند، نه مستقیماً یکی از بازوهای VSEPR دور اتم مرکزی باشد
+                let isAcidAnion = polyOthers.some(a=>a.data.sym==='H') && polyOthers.some(a=>a.data.sym==='O')
+                    && [...new Set(nonmetals.map(a=>a.data.sym).filter(s=>s!=='H'&&s!=='O'))].length===1;
+                let hAtoms = isAcidAnion ? polyOthers.filter(a=>a.data.sym==='H') : [];
+                let oAtoms = isAcidAnion ? polyOthers.filter(a=>a.data.sym==='O') : [];
+                let bridgeOIds = new Set(hAtoms.map((h,i)=> (oAtoms[i % (oAtoms.length||1)]||{}).id));
+                let vseprAtoms = isAcidAnion ? oAtoms : polyOthers;
+
+                // الکترون‌های منتقل‌شده از فلز باید به اکسیژن‌های «غیرپل» برسند (چون اکسیژنِ متصل به H از قبل
+                // ظرفیتش با پیوند O-H و جفت‌های آزاد کامل شده و نیازی به الکترون اضافه ندارد)، هرگز به هیدروژن
+                let oCandidates = [polyCenter, ...polyOthers].filter(a=>a.data.sym==='O' && !bridgeOIds.has(a.id));
+                if(oCandidates.length===0) oCandidates = polyOthers.length ? polyOthers.filter(a=>a.data.sym!=='H') : [polyCenter];
+                if(oCandidates.length===0) oCandidates = [polyCenter];
+
+                // در مرحلهٔ تشکیل پیوند اشتراکی: اکسیژن‌های غیرپل با دو پیوند اشتراکی شروع می‌شوند (بعداً یکی حذف می‌شود)،
+                // اما اکسیژنِ پل‌خورده به H همیشه تک‌پیوند می‌ماند (یک گروه OH واقعی هرگز دوگانه نیست) و خودِ H هم همیشه تک‌پیوند
+                window.covalentBonds = polyOthers.map(a => ({ targetId: a.id, x: a.x, y: a.y, order: (a.data.sym==='H' || bridgeOIds.has(a.id)) ? 1 : 2 }));
 
                 // شعاع کلی هر اتم (هسته + همه مدارها)
                 let outerR = a => a.radius + a.shells.length * a.gap;
@@ -2101,18 +2256,32 @@
                 // محدود کردن به عرض صفحه
                 let half = Math.min(centerSeparation/2, W/2 - maxMetalR - 30);
                 let pcx = W/2 + half, pcy = H/2 - 30;           // مرکز بنیان (سمت راست)
-                let metalBaseX = W/2 - half;                    // فلز(ها) (سمت چپ)
+
+                let ionVg = vseprAnglesIon(polyCenter.data.sym, vseprAtoms.length);
 
                 animateAtom(polyCenter, pcx, pcy, 0.02);
-                polyOthers.forEach((a, i) => {
-                    let angle = (i/(polyOthers.length||1))*Math.PI*2 - Math.PI/2;
+                vseprAtoms.forEach((a, i) => {
+                    let angle = ionVg.angles[i] !== undefined ? ionVg.angles[i] : (i/(vseprAtoms.length||1))*Math.PI*2;
                     let dist = periDist(a);
                     setTimeout(() => animateAtom(a, pcx + Math.cos(angle)*dist, pcy + Math.sin(angle)*dist, 0.02), 400);
                 });
+                // اتم‌های هیدروژنِ پل‌خورده: هرکدام کنار اکسیژن پلِ خودش (نه مستقیم دور مرکز) قرار می‌گیرد
+                hAtoms.forEach((h, i) => {
+                    let bridgeO = oAtoms[i % (oAtoms.length||1)];
+                    if(!bridgeO) return;
+                    let bi = vseprAtoms.indexOf(bridgeO);
+                    let angle = ionVg.angles[bi] !== undefined ? ionVg.angles[bi] : 0;
+                    let dist = periDist(bridgeO) + outerR(bridgeO)*0.55 + outerR(h)*0.7;
+                    setTimeout(() => animateAtom(h, pcx + Math.cos(angle)*dist, pcy + Math.sin(angle)*dist, 0.02), 800);
+                });
 
+                // فلز(ها) در این مرحله باید کاملاً مجزا و در «یک گوشه» بمانند، تا وقتی بنیان چنداتمی با پیوند اشتراکی کامل تشکیل شود
+                // (کاتیون هنوز الکترون از دست نداده و نباید نزدیک بنیان در حال تشکیل باشد)
+                let cornerX = Math.max(100, W*0.13);
+                let cornerY = Math.max(100, H*0.18);
                 metals.forEach((m, i) => {
-                    let my = pcy + (i*70 - (metals.length-1)*35);
-                    animateAtom(m, metalBaseX, my, 0.02);
+                    let my = cornerY + i*70;
+                    animateAtom(m, cornerX, my, 0.02);
                 });
 
                 setTimeout(() => {
@@ -2125,13 +2294,19 @@
                         
                         // انتقال الکترون‌ها (فقط جابجایی، بار هنوز اعمال نمی‌شود)
                         q.forEach((job, i) => {
-                            let target = polyOthers[i%polyOthers.length] || polyCenter;
+                            let target = oCandidates[i%oCandidates.length];
                             setTimeout(() => {
                                 playSound('pew'); movingElectrons.push(new ElectronTrail(job.m.x, job.m.y, target, () => {
                                     if(job.m.shells[job.s] > 0) { job.m.shells[job.s]--; if(job.m.shells[job.s]===0 && job.s === job.m.shells.length - 1) job.m.shells.pop(); }
                                     while(job.m.shells.length > 0 && job.m.shells[job.m.shells.length-1] === 0) job.m.shells.pop();
                                     job.m.updateAngles();
                                     let tidx = target.getOuterShell(); target.shells[tidx]++; target.updateAngles();
+                                    // دقیقاً همین لحظه که الکترون رسید: یکی از دو پیوند اشتراکی این اکسیژن حذف می‌شود
+                                    // (آن جفت‌الکترون اضافه‌شده دیگر جفت آزاد است، نه جفت پیوندی مشترک با گوگرد)
+                                    if(target !== polyCenter){
+                                        let bd = window.covalentBonds && window.covalentBonds.find(b => b.targetId === target.id);
+                                        if(bd && bd.order === 2) bd.order = 1;
+                                    }
                                 }));
                             }, i * 700);
                         });
@@ -2143,7 +2318,7 @@
                             playSound('chime');
                             let chargePerMetal = {}; q.forEach(job=>{ chargePerMetal[job.m.id]=(chargePerMetal[job.m.id]||0)+1; });
                             metals.forEach(m=>{ if(chargePerMetal[m.id]){ m.charge=chargePerMetal[m.id]; m.updateAngles(); } });
-                            let chargePerT = {}; q.forEach((job,i)=>{ let t=polyOthers[i%polyOthers.length]||polyCenter; chargePerT[t.id]=(chargePerT[t.id]||0)+1; });
+                            let chargePerT = {}; q.forEach((job,i)=>{ let t=oCandidates[i%oCandidates.length]; chargePerT[t.id]=(chargePerT[t.id]||0)+1; });
                             [...polyOthers, polyCenter].forEach(a=>{ if(chargePerT[a.id]){ a.charge=-chargePerT[a.id]; a.updateAngles(); } });
 
                             // --- مرحله ۵: جذب الکترواستاتیک و چسبیدن ---
@@ -2155,7 +2330,7 @@
                                     let targetY = pcy + (i*60 - (metals.length-1)*30);
                                     animateAtom(m, targetX, targetY, 0.006);
                                 });
-                                currentGeoName = 'یونی با بنیان چنداتمی';
+                                currentGeoName = `یونی با بنیان چنداتمی - ${ionVg.geoName}`;
                                 setTimeout(()=>finalize('یونی (Ionic)'), 2800);
                             }, 1400);
                         }, electronTime);
@@ -2167,8 +2342,11 @@
                 
                 // Do NOT move them yet. Keep them in their initial widely spaced positions.
                 let cx=W/2, cy=H/2 - 40;
-                let center = [...nonmetals, ...metals].sort((a,b) => b.radius - a.radius)[0];
-                let others = labAtoms.filter(a=>a.id!==center.id);
+                // در ترکیب یونی، کاتیون (فلز) همیشه مرکز است و آنیون‌ها (نافلزها) دور آن قرار می‌گیرند
+                // (مثلاً در MgCl2، منیزیم باید در وسط و دو کلر در دو طرف آن باشد؛ نه برعکس)
+                let center = metals[0];
+                let extraMetals = metals.slice(1); // اگر بیش از یک اتم فلز باشد (مثل Mg3P2)، بقیه هم کاتیون‌اند، نه آنیون
+                let others = nonmetals;
 
                 setTimeout(() => {
                     // --- مرحله ۱: انتقال الکترون‌ها (فقط جابجایی الکترون، هنوز بار نمایش داده نمی‌شود) ---
@@ -2209,6 +2387,11 @@
                                     let tightDist = center.radius + a.radius + 10; 
                                     animateAtom(a, cx + Math.cos(angle)*tightDist, cy + Math.sin(angle)*tightDist, 0.006); 
                                 });
+                                // اتم‌های فلزی اضافی (وقتی بیش از یک اتم فلز داریم، مثل Mg3P2): همگی کاتیون‌اند، کنار مرکز می‌نشینند
+                                extraMetals.forEach((m, i) => {
+                                    let tightDist = center.radius + m.radius + 20;
+                                    animateAtom(m, cx - tightDist*(i+1)*1.3, cy, 0.006);
+                                });
                             }
                             currentGeoName = 'شبکه بلوری (یونی)';
                             setTimeout(()=>finalize('یونی (Ionic)'), 3000); 
@@ -2227,13 +2410,65 @@
 
             if(backboneCount >= 2) {
                 /* ---- مولکول چند-مرکزی (مثل C2H4، اتان، اتانول...) ---- */
-                let graph = buildMolecularGraph(nonmetals);
-                let pos = layoutMolecule(nonmetals, graph, cx, cy);
-                currentGeoName = 'ساختار چند-مرکزی';
+                let graph, pos;
+                let isBenzene = isBenzenePattern(nonmetals);
+                let isToluene = !isBenzene && isToluenePattern(nonmetals);
+                let isOxoacid = !isBenzene && !isToluene && isOxoacidPattern(nonmetals);
+                let isPropyne = !isBenzene && !isToluene && !isOxoacid && isPropynePattern(nonmetals);
+                let isMethanol = !isBenzene && !isToluene && !isOxoacid && !isPropyne && isMethanolPattern(nonmetals);
+                let isFormaldehyde = !isBenzene && !isToluene && !isOxoacid && !isPropyne && !isMethanol && isFormaldehydePattern(nonmetals);
+                let isFormicAcid = !isBenzene && !isToluene && !isOxoacid && !isPropyne && !isMethanol && !isFormaldehyde && isFormicAcidPattern(nonmetals);
+                let isAceticAcid = !isBenzene && !isToluene && !isOxoacid && !isPropyne && !isMethanol && !isFormaldehyde && !isFormicAcid && isAceticAcidPattern(nonmetals);
+                let isDiborane = !isBenzene && !isToluene && !isOxoacid && !isPropyne && !isMethanol && !isFormaldehyde && !isFormicAcid && !isAceticAcid && isDiboranePattern(nonmetals);
+                if(isBenzene) {
+                    // بنزن: حلقهٔ ۶ضلعی با پیوندهای متناوب یگانه/دوگانه (ککوله)، نه زنجیرهٔ خطی
+                    graph = buildBenzeneGraph(nonmetals);
+                    pos = layoutBenzeneMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'حلقهٔ آروماتیک (بنزن، ککوله)';
+                } else if(isToluene) {
+                    graph = buildTolueneGraph(nonmetals);
+                    pos = layoutTolueneMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'حلقهٔ آروماتیک با گروه متیل (تولوئن)';
+                } else if(isOxoacid) {
+                    // اکسو-اسیدها (H2SO4, HNO3, H3PO4, H2CO3, HClOx, H2SeO4): H از طریق اکسیژن پل می‌خورد، نه مستقیم به مرکز
+                    graph = buildOxoacidGraph(nonmetals);
+                    pos = layoutOxoacidMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'اکسو-اسید (گروه‌های هیدروکسیل و اکسیژن دوگانه)';
+                } else if(isPropyne) {
+                    // پروپاین: H-C≡C-CH3 (پیوند سه‌گانه در انتها، نه توزیع یکنواخت H)
+                    graph = buildPropyneGraph(nonmetals);
+                    pos = layoutMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'زنجیرهٔ کربنی با پیوند سه‌گانه (آلکاین)';
+                } else if(isMethanol) {
+                    graph = buildMethanolGraph(nonmetals);
+                    pos = layoutMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'الکل (متانول)';
+                } else if(isFormaldehyde) {
+                    graph = buildFormaldehydeGraph(nonmetals);
+                    pos = layoutMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'آلدهید (فرمالدهید)';
+                } else if(isFormicAcid) {
+                    graph = buildFormicAcidGraph(nonmetals);
+                    pos = layoutMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'اسید کربوکسیلیک (اسید فرمیک)';
+                } else if(isAceticAcid) {
+                    graph = buildAceticAcidGraph(nonmetals);
+                    pos = layoutMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'اسید کربوکسیلیک (اسید استیک)';
+                } else if(isDiborane) {
+                    graph = buildDiboraneGraph(nonmetals);
+                    pos = layoutDiboraneMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'پیوند پل‌زن سه‌مرکزی-دوالکترونی (دی‌بوران)';
+                } else {
+                    graph = buildMolecularGraph(nonmetals);
+                    pos = layoutMolecule(nonmetals, graph, cx, cy);
+                    currentGeoName = 'ساختار چند-مرکزی';
+                }
 
                 // اصلاح مرتبهٔ پیوندها با موتور لوویس — فقط برای مولکول‌های ساده‌ی «تک‌مرکزی» بدون هیدروژن
-                // (مثل O3, SO2, NO2, SO3, N2O...). برای هیدروکربن‌ها (C2H4...) دست نمی‌زنیم چون گراف چندمرکزی درست است.
+                // (مثل O3, SO2, NO2, SO3, N2O...). برای هیدروکربن‌ها و اکسو-اسیدها دست نمی‌زنیم چون گراف‌شان درست است.
                 try {
+                    if(!isOxoacid) {
                     let syms = nonmetals.map(a=>a.data.sym);
                     let hasH = syms.includes('H');
                     let uniqueHeavy = [...new Set(syms.filter(s=>s!=='H'))];
@@ -2267,6 +2502,7 @@
                             currentGeoName = 'مسطح مثلثی (Trigonal Planar)';
                         }
                     }
+                    }
                 } catch(e){}
 
                 // ذخیره پیوندها با شناسه اتم‌ها
@@ -2288,7 +2524,7 @@
             } else {
                 /* ---- مولکول تک‌مرکزی (مثل H2O، CO2، NH3، CH4...) ---- */
                 window.molecularBonds = [];
-                let center = nonmetals.find(a=>['C','Si','N','P','S','O'].includes(a.data.sym)) || nonmetals[0];
+                let center = nonmetals.find(a=>['C','Si','N','P','S','O','B'].includes(a.data.sym)) || nonmetals[0];
                 let others = nonmetals.filter(a=>a.id!==center.id);
                 animateAtom(center, cx, cy);
 
@@ -2607,11 +2843,6 @@
         document.getElementById('dashChip').classList.remove('show');
         // متن زیرنویس باکس کوچک را با نام ترکیب به‌روز کن
         document.getElementById('chipSub').innerText = cName ? cName : 'ترکیب جدید';
-
-        // خواندن نام ترکیب با صدای فارسی (پس از کمی مکث تا گفتار مراحل تمام شود)
-        if(cName){
-            setTimeout(()=> speak('ترکیب ساخته شد: ' + cName, {cancel:true, rate:0.92}), 400);
-        }
     }
 
     /* ==========================================
@@ -2640,35 +2871,24 @@
     }
 
     // رسم یک پیوند بین دو اتم با مرتبه مشخص (تک/دوگانه/سه‌گانه/رزونانسی)
-    /* ---- رسم یک «لوله» پیوندی با نورپردازی عرضی، به‌جای خط تخت، برای حس استوانه‌ی سه‌بعدی ---- */
-    function drawTubeBond(x1, y1, x2, y2, width, color){
-        let dx = x2-x1, dy = y2-y1, len = Math.hypot(dx,dy)||1, nx = -dy/len, ny = dx/len;
-        let grad = ctx.createLinearGradient(x1+nx*width/2, y1+ny*width/2, x1-nx*width/2, y1-ny*width/2);
-        grad.addColorStop(0, 'rgba(255,255,255,0.10)');
-        grad.addColorStop(0.5, color);
-        grad.addColorStop(1, 'rgba(0,0,0,0.40)');
-        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
-        ctx.strokeStyle = grad; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.stroke();
-        // نوار درخشان روی لبه‌ی بالای لوله برای حس براقیت استوانه‌ای
-        ctx.beginPath();
-        ctx.moveTo(x1+nx*width*0.18, y1+ny*width*0.18);
-        ctx.lineTo(x2+nx*width*0.18, y2+ny*width*0.18);
-        ctx.strokeStyle = 'rgba(255,255,255,0.32)';
-        ctx.lineWidth = Math.max(1, width*0.18); ctx.lineCap = 'round'; ctx.stroke();
-    }
-
     function drawBondLine(center, a, order, baseColor){
         if(order === 1) {
-            drawTubeBond(center.x, center.y, a.x, a.y, 12, baseColor);
+            ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y);
+            ctx.strokeStyle = baseColor; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
         } else if(order === 2 || order === 1.5) {
             let dx = a.x - center.x, dy = a.y - center.y, len = Math.hypot(dx, dy)||1, nx = -dy/len*10, ny = dx/len*10;
-            drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 8, baseColor);
-            drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 8, baseColor);
+            ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny);
+            ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny);
+            ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
         } else if(order === 3) {
             let dx = a.x - center.x, dy = a.y - center.y, len = Math.hypot(dx, dy)||1, nx = -dy/len*13, ny = dx/len*13;
-            drawTubeBond(center.x, center.y, a.x, a.y, 7, baseColor);
-            drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 7, baseColor);
-            drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 7, baseColor);
+            ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y);
+            ctx.strokeStyle = baseColor; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny);
+            ctx.strokeStyle = baseColor; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny);
+            ctx.strokeStyle = baseColor; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
         }
     }
 
@@ -2678,7 +2898,6 @@
         if(modalOpen){ requestAnimationFrame(render); return; }
 
         ctx.clearRect(0,0,W,H);
-        drawStars();
         
         if(appState === 'bonded' || appState.includes('polyatomic') || appState.includes('covalent_share')) {
             let nms = labAtoms.filter(a=>a.type==='nonmetal');
@@ -2718,7 +2937,7 @@
             }
             
             if(shouldDrawBonds) {
-                let center = nms.find(a=>['C','Si','N','P','S','O','Cr','Mn'].includes(a.data.sym)) || nms[0];
+                let center = findHeteroCenter(nms);
                 let pulse = (Math.sin(Date.now()/200)+1)/2; 
                 
                 let isSharing = appState.includes('share');
@@ -2736,16 +2955,22 @@
                             let order = bondInfo ? bondInfo.order : 1;
                             
                             if(order === 1) {
-                                drawTubeBond(center.x, center.y, a.x, a.y, 15, baseColor);
+                                ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y);
+                                ctx.strokeStyle = baseColor; ctx.lineWidth = 15; ctx.lineCap = 'round'; ctx.stroke();
                             } else if(order === 2 || order === 1.5) {
                                 let dx = a.x - center.x; let dy = a.y - center.y; let len = Math.hypot(dx, dy); let nx = -dy/len * 12; let ny = dx/len * 12;
-                                drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 10, baseColor);
-                                drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 10, baseColor);
+                                ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny);
+                                ctx.strokeStyle = baseColor; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.stroke();
+                                ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny);
+                                ctx.strokeStyle = baseColor; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.stroke();
                             } else if(order === 3) {
                                 let dx = a.x - center.x; let dy = a.y - center.y; let len = Math.hypot(dx, dy); let nx = -dy/len * 15; let ny = dx/len * 15;
-                                drawTubeBond(center.x, center.y, a.x, a.y, 8, baseColor);
-                                drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 8, baseColor);
-                                drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 8, baseColor);
+                                ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y); 
+                                ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+                                ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny); 
+                                ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+                                ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny); 
+                                ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
                             }
                             
                             if (isSharing) {
@@ -2767,6 +2992,727 @@
     }
     render();
     maybeShowTourOnFirstVisit();
-    // همگام‌سازی وضعیت دکمه صدا (روشن/خاموش/ناموجود)
-    updateVoiceButton();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script>
+/* =========================================================================
+   نمای سه‌بعدی واقعی (WebGL / Three.js) — نمایش ساختار نهایی و صحیح مولکول جاری
+   این ماژول مستقل از موتور انیمیشن دوبعدی است و فقط از داده‌های شیمیایی
+   (فرمول/نوع اتم‌ها) برای ساخت یک مدل سه‌بعدی واقعی با هندسهٔ VSEPR درست استفاده می‌کند
+   ========================================================================= */
+(function(){
+    // پالت رنگ و شعاع اتم‌ها (استاندارد دقیق Jmol/CPK)
+    const ELEM_STYLE = {
+        H:{c:0xffffff,r:0.32}, C:{c:0x909090,r:0.42}, N:{c:0x3050f8,r:0.4}, O:{c:0xff0d0d,r:0.4},
+        F:{c:0x90e050,r:0.36}, Na:{c:0xab5cf2,r:0.5}, Mg:{c:0x8aff00,r:0.48}, Al:{c:0xbfa6a6,r:0.48},
+        Si:{c:0xf0c8a0,r:0.46}, P:{c:0xff8000,r:0.42}, S:{c:0xffff30,r:0.42}, Cl:{c:0x1ff01f,r:0.4},
+        K:{c:0x8f40d4,r:0.55}, Ca:{c:0x3dff00,r:0.52}, Cr:{c:0x8a99c7,r:0.46}, Mn:{c:0x9c7ac7,r:0.46},
+        Fe:{c:0xe06633,r:0.46}, Cu:{c:0xc88033,r:0.46}, Zn:{c:0x7d80b0,r:0.46}, Br:{c:0xa62929,r:0.42},
+        Ag:{c:0xc0c0c0,r:0.46}, I:{c:0x940094,r:0.46}, Ba:{c:0x00c900,r:0.55}, Li:{c:0xcc80ff,r:0.5},
+        Be:{c:0xc2ff00,r:0.4}, B:{c:0xffb5b5,r:0.4}, Ti:{c:0xbfc2c7,r:0.46}, Pb:{c:0x575961,r:0.5}, Se:{c:0xffa100,r:0.42}
+    };
+    function styleOf(sym){ return ELEM_STYLE[sym] || {c:0xbfa6a6, r:0.44}; }
+    // برای متن روی کره، بر اساس روشنایی رنگ زمینه، سیاه یا سفید انتخاب کن تا همیشه خوانا باشد
+    function textColorFor(hex){
+        let r=(hex>>16)&255, g=(hex>>8)&255, b=hex&255;
+        let lum = (0.299*r + 0.587*g + 0.114*b)/255;
+        return lum > 0.6 ? '#111111' : '#ffffff';
+    }
+    // آرایش الکترونی پیش‌فرض (خنثی) یک عنصر، برای اتم‌های ساختگی که به labAtoms واقعی وصل نیستند (مثل بنزن)
+    function defaultShells(sym){
+        let z = fullSymbols.indexOf(sym) + 1;
+        if(z<=0 || !exactShells[z-1]) return [2];
+        return exactShells[z-1].slice();
+    }
+    // اسپرایت متنی که همیشه رو به دوربین است (بیلبورد) — برای نام عنصر و برچسب بار
+    function makeTextSprite(text, opts){
+        opts = opts || {};
+        let size = opts.size || 128;
+        let canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        let ctx = canvas.getContext('2d');
+        if(opts.bg){
+            ctx.fillStyle = opts.bg;
+            ctx.beginPath(); ctx.arc(size/2, size/2, size/2 - 4, 0, Math.PI*2); ctx.fill();
+            if(opts.border){ ctx.lineWidth=6; ctx.strokeStyle=opts.border; ctx.stroke(); }
+        }
+        ctx.font = `bold ${opts.fontSize||size*0.5}px Arial, sans-serif`;
+        ctx.fillStyle = opts.color || '#000';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(text, size/2, size/2 + size*0.03);
+        let tex = new THREE.CanvasTexture(canvas);
+        tex.needsUpdate = true;
+        let mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthTest: opts.depthTest!==false});
+        let sprite = new THREE.Sprite(mat);
+        sprite.renderOrder = 5;
+        return sprite;
+    }
+    // یک حلقهٔ مداری نازک دور اتم (در صفحهٔ xz، مثل حلقه‌های زحل، تا با چرخش مولکول واقعاً سه‌بعدی دیده شود)
+    function makeOrbitRing(radius, color){
+        let pts = [];
+        for(let i=0;i<=64;i++){ let a=(i/64)*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*radius, 0, Math.sin(a)*radius)); }
+        let geo = new THREE.BufferGeometry().setFromPoints(pts);
+        let mat = new THREE.LineBasicMaterial({color, transparent:true, opacity:0.45});
+        return new THREE.LineLoop(geo, mat);
+    }
+    // برای اتم‌های کووالانسی‌بانده: الکترون‌های پیوندی از قبل با خودِ خط پیوند نشان داده می‌شوند،
+    // پس در مدار دور اتم فقط الکترون‌های ناپیوندی (جفت‌های آزاد) را نشان بده تا الکترون دوبار نمایش داده نشود
+    // (مثلاً H در متان: پیوندش با خط توپر مشخصه، پس مدارش باید خالی باشد، نه یک الکترون اضافه)
+    function lonePairOnlyShells(shells, lonePairsCount){
+        let adj = shells.slice();
+        let outer = adj.length-1;
+        while(outer>0 && adj[outer]===0) outer--;
+        adj[outer] = Math.max(0, lonePairsCount)*2;
+        return adj;
+    }
+    const _valenceE2 = {H:1,He:2,Li:1,Be:2,B:3,C:4,N:5,O:6,F:7,Ne:8,Na:1,Mg:2,Al:3,Si:4,P:5,S:6,Cl:7,Ar:8,Br:7,I:7,Se:6};
+    // برآورد جفت‌الکترون‌های آزاد وقتی داده دقیق لوویس نداریم: (الکترون ظرفیت کل − مجموع مرتبهٔ پیوندهای متصل)/۲
+    function estimateLonePairs(sym, totalBondOrderAtAtom){
+        let ve = _valenceE2[sym]; if(ve===undefined) return 0;
+        return Math.max(0, Math.round((ve - totalBondOrderAtAtom)/2));
+    }
+
+    const TETRA = [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(norm3);
+    function norm3(v){ let l=Math.hypot(v[0],v[1],v[2]); return [v[0]/l,v[1]/l,v[2]/l]; }
+
+    // بردارهای واحد VSEPR سه‌بعدی واقعی برای تعداد اتم‌های پیرامونی مختلف
+    function vsepr3(centerSym, count, ionicMode){
+        if(count<=1) return {vecs:[[0,0,1]], geo:'خطی (Linear)'};
+        if(count===2){
+            if(!ionicMode && ['O','S'].includes(centerSym)){
+                let half = (104.5/2)*Math.PI/180;
+                return {vecs:[[Math.sin(half),Math.cos(half),0],[-Math.sin(half),Math.cos(half),0]], geo:'خمیده (Bent)'};
+            }
+            return {vecs:[[1,0,0],[-1,0,0]], geo:'خطی (Linear)'};
+        }
+        if(count===3){
+            if(!ionicMode && ['N','P','S'].includes(centerSym)) return {vecs:[TETRA[0],TETRA[1],TETRA[2]], geo:'هرم مثلثی (Trigonal Pyramidal)'};
+            return {vecs:[[1,0,0],[-0.5,0.8660254,0],[-0.5,-0.8660254,0]], geo:'مسطح مثلثی (Trigonal Planar)'};
+        }
+        if(count===4) return {vecs:TETRA, geo:'چهاروجهی (Tetrahedral)'};
+        if(count===5) return {vecs:[[1,0,0],[-0.5,0.8660254,0],[-0.5,-0.8660254,0],[0,0,1],[0,0,-1]], geo:'هرم دوقاعده‌ای مثلثی (Trigonal Bipyramidal)'};
+        if(count===6) return {vecs:[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]], geo:'هشت‌وجهی (Octahedral)'};
+        let vecs=[]; for(let i=0;i<count;i++){let a=(i/count)*2*Math.PI; vecs.push([Math.cos(a),Math.sin(a),0]);}
+        return {vecs, geo:'چندوجهی ساختاریافته'};
+    }
+
+    // ==== سازندهٔ ساختار سه‌بعدی بر اساس اتم‌های واقعاً موجود روی میز کار (labAtoms) ====
+    function build3DFromLabAtoms(){
+        if(typeof labAtoms === 'undefined' || labAtoms.length === 0) return null;
+        let metals = labAtoms.filter(a=>a.type==='metal');
+        let nonmetals = labAtoms.filter(a=>a.type!=='metal');
+        let bondLen = 1.55;
+        let atoms3D = [], bonds3D = [];
+
+        function pushAtom(sym, shells, charge){
+            atoms3D.push({sym, shells: shells || defaultShells(sym), charge: charge||0});
+            return atoms3D.length-1;
+        }
+        function elecNeed(a){ return a.data.sym==='H' ? (2-a.shells[a.getOuterShell()]) : (8-a.shells[a.getOuterShell()]); }
+
+        if(metals.length>0 && nonmetals.length>0){
+            // ---- ترکیب یونی ----
+            let uniqueTypes = new Set(labAtoms.map(a=>a.data.sym)).size;
+            let isPolyatomic = (uniqueTypes>=3 && nonmetals.length>1) || (nonmetals.length>1 && nonmetals.some(a=>a.data.sym==='O') && nonmetals.some(a=>a.data.sym==='H'));
+            // بنیان‌های اسیدی نیمه‌خنثی‌شده (مثل بی‌کربنات در NaHCO3): هیدروژن باید از طریق یک اکسیژن پل بخورد،
+            // نه مستقیم به اتم مرکزی وصل شود — درست مثل اکسو-اسیدهای خنثی، فقط این‌جا کنار یک فلز هم هست
+            let isAcidAnion = isPolyatomic && nonmetals.some(a=>a.data.sym==='H') && nonmetals.some(a=>a.data.sym==='O')
+                && [...new Set(nonmetals.map(a=>a.data.sym).filter(s=>s!=='H'&&s!=='O'))].length===1
+                && typeof buildOxoacidGraph==='function';
+            if(isAcidAnion){
+                let g = buildOxoacidGraph(nonmetals);
+                let syms = nonmetals.map(a=>a.data.sym);
+                let allO = [...g.bridgeO, ...g.terminalO];
+                let v = vsepr3(syms[g.center], allO.length, false);
+                let bondSum = {};
+                g.bonds.forEach(b=>{ bondSum[b.a]=(bondSum[b.a]||0)+b.order; bondSum[b.b]=(bondSum[b.b]||0)+b.order; });
+                let idxMap = {};
+                idxMap[g.center] = pushAtom(syms[g.center], lonePairOnlyShells(nonmetals[g.center].shells, estimateLonePairs(syms[g.center], bondSum[g.center]||0)), 0);
+                atoms3D[idxMap[g.center]].pos = [0,0,0];
+                allO.forEach((oi,i)=>{
+                    let vec = v.vecs[i] || [0,0,1];
+                    // اکسیژن پل‌خورده به H یک گروه OH خنثی است (بار صفر)؛ اکسیژن ترمینال تک‌پیوندی بار فرمال −۱ دارد
+                    let isTerminal = g.terminalO.includes(oi);
+                    let dispCharge = (isTerminal && (bondSum[oi]||0)===1) ? -1 : 0;
+                    idxMap[oi] = pushAtom('O', lonePairOnlyShells(nonmetals[oi].shells, estimateLonePairs('O', bondSum[oi]||0)), dispCharge);
+                    atoms3D[idxMap[oi]].pos = [vec[0]*bondLen, vec[1]*bondLen, vec[2]*bondLen];
+                });
+                g.bonds.forEach(b=>{
+                    let aIdx = idxMap[b.a] !== undefined ? idxMap[b.a] : null;
+                    let bIdx = idxMap[b.b] !== undefined ? idxMap[b.b] : null;
+                    if(syms[b.b]==='H' && idxMap[b.b]===undefined){
+                        let op = atoms3D[idxMap[b.a]].pos;
+                        let norm = norm3(op);
+                        idxMap[b.b] = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+                        atoms3D[idxMap[b.b]].pos = [op[0]+norm[0]*0.95, op[1]+norm[1]*0.95, op[2]+norm[2]*0.95];
+                        bIdx = idxMap[b.b];
+                    }
+                    if(aIdx!==null && bIdx!==null) bonds3D.push({a:aIdx, b:bIdx, order:b.order});
+                });
+                let nmSig = getSig(syms);
+                let groupCharge = (typeof polyatomicCharge!=='undefined' && polyatomicCharge[nmSig]!==undefined) ? polyatomicCharge[nmSig] : 1;
+                let metalCharge = Math.ceil(groupCharge / metals.length);
+                metals.forEach((m,i)=>{
+                    let mi = pushAtom(m.data.sym, m.shells.slice(), metalCharge);
+                    atoms3D[mi].pos = [-(bondLen*2.6), (i - (metals.length-1)/2)*1.3, 0];
+                    bonds3D.push({a:idxMap[g.center], b:mi, ionic:true});
+                });
+                return {atoms3D, bonds3D, geo: 'یونی با بنیان اسیدی - ' + v.geo, title: 'ساختار یونی'};
+            }
+
+            // چند بنیان چنداتمی جداگانه (مثل Al2(SO4)3: سه یون سولفات مجزا، نه یک خوشهٔ غول‌پیکر)
+            // وقتی نسبت O به اتم مرکزی یک عدد صحیح تمیز باشد (۲ تا ۴)، یعنی چند واحد MOx یکسان و جدا از هم داریم
+            function detectMultiUnitIon(nms){
+                const hubs = ['S','P','N','C','Cl','Cr','Mn','Se','Br','I'];
+                let counts = {}; nms.forEach(a=>{ counts[a.data.sym]=(counts[a.data.sym]||0)+1; });
+                let hubSym = Object.keys(counts).find(s=>hubs.includes(s) && counts[s]>1);
+                if(!hubSym) return null;
+                let hubCount = counts[hubSym], oCount = counts['O']||0;
+                if(hubCount<=1 || oCount===0 || oCount % hubCount !== 0) return null;
+                let oPerUnit = oCount/hubCount;
+                if(oPerUnit<2 || oPerUnit>4) return null;
+                if(nms.length - hubCount - oCount !== 0) return null; // فقط hub+O باشد، چیز دیگری نباشد
+                return {hubSym, hubCount, oPerUnit};
+            }
+            let multiUnit = isPolyatomic ? detectMultiUnitIon(nonmetals) : null;
+            if(multiUnit){
+                let oAtomsAll = nonmetals.filter(a=>a.data.sym===  'O');
+                let hubAtoms = nonmetals.filter(a=>a.data.sym===multiUnit.hubSym);
+                const _polyMaxV2 = {S:6,P:5,N:4,C:4,Cl:7,Cr:6,Mn:8,Se:6,Br:7,I:7};
+                let maxV2 = _polyMaxV2[multiUnit.hubSym] || 4;
+                let unitR = 2.5, unitAngleStep = Math.PI*2/multiUnit.hubCount;
+                hubAtoms.forEach((hub, ui)=>{
+                    let angle = ui*unitAngleStep;
+                    let ucx = Math.cos(angle)*unitR, ucy = Math.sin(angle)*unitR;
+                    let unitO = oAtomsAll.slice(ui*multiUnit.oPerUnit, (ui+1)*multiUnit.oPerUnit);
+                    let v = vsepr3(hub.data.sym, unitO.length, false);
+                    let freeV = maxV2 - unitO.length;
+                    let bondOrdersU = unitO.map((o,i)=> i<freeV ? 2 : 1);
+                    let centerBondSum = bondOrdersU.reduce((s,o)=>s+o,0);
+                    let ci = pushAtom(hub.data.sym, lonePairOnlyShells(hub.shells, estimateLonePairs(hub.data.sym, centerBondSum)), 0);
+                    atoms3D[ci].pos = [ucx, ucy, 0];
+                    unitO.forEach((o,i)=>{
+                        let vec = v.vecs[i] || [0,0,1];
+                        let order = bondOrdersU[i];
+                        let oCharge = order===1 ? -1 : 0;
+                        let oi = pushAtom('O', lonePairOnlyShells(o.shells, estimateLonePairs('O', order)), oCharge);
+                        atoms3D[oi].pos = [ucx+vec[0]*bondLen, ucy+vec[1]*bondLen, vec[2]*bondLen];
+                        bonds3D.push({a:ci, b:oi, order});
+                    });
+                });
+                // فلزها را در میان بنیان‌های جداگانه پخش کن و هرکدام را با خط‌چین (جاذبهٔ الکترواستاتیک) به نزدیک‌ترین بنیان وصل کن
+                metals.forEach((m,i)=>{
+                    let angle = ((i+0.5)/(metals.length||1))*Math.PI*2;
+                    let mi = pushAtom(m.data.sym, m.shells.slice(), (typeof ionCharge!=='undefined' && ionCharge[m.data.sym]) || 3);
+                    atoms3D[mi].pos = [Math.cos(angle)*unitR*0.55, Math.sin(angle)*unitR*0.55, 0.5];
+                });
+                return {atoms3D, bonds3D, geo: `${multiUnit.hubCount} یون ${multiUnit.hubSym}O${multiUnit.oPerUnit} مجزا (بنیان چندواحدی)`, title: 'ساختار یونی'};
+            }
+
+            // دی‌کرومات K2Cr2O7: برخلاف Al2(SO4)3، این یک یون واحد و به‌هم‌پیوسته است — دو واحد CrO4-مانند
+            // که یک اکسیژن پل‌زن بین دو کروم مشترک دارند (نه دو یون کاملاً جدا)
+            let isDichromate = isPolyatomic && (()=>{ let c={}; nonmetals.forEach(a=>c[a.data.sym]=(c[a.data.sym]||0)+1); return c['Cr']===2 && c['O']===7 && nonmetals.length===9; })();
+            if(isDichromate){
+                let crAtoms = nonmetals.filter(a=>a.data.sym==='Cr');
+                let oAtoms = nonmetals.filter(a=>a.data.sym==='O');
+                let crDist = 3.0;
+                let cr0 = pushAtom('Cr', lonePairOnlyShells(crAtoms[0].shells, 0), 0);
+                let cr1 = pushAtom('Cr', lonePairOnlyShells(crAtoms[1].shells, 0), 0);
+                atoms3D[cr0].pos = [-crDist/2, 0, 0];
+                atoms3D[cr1].pos = [crDist/2, 0, 0];
+                // اکسیژن پل‌زن بین دو کروم (تک‌پیوند به هرکدام)
+                let bridgeO = pushAtom('O', lonePairOnlyShells(oAtoms[0].shells, estimateLonePairs('O',2)), 0);
+                atoms3D[bridgeO].pos = [0, 0, 0];
+                bonds3D.push({a:cr0, b:bridgeO, order:1}, {a:cr1, b:bridgeO, order:1});
+                // هر کروم ۳ اکسیژن ترمینال دارد (۲ دوگانه + ۱ یگانه با بار −۱، مطابق ساختار واقعی)
+                [cr0, cr1].forEach((ci, ui)=>{
+                    let baseAngle = ui===0 ? Math.PI : 0;
+                    let termO = oAtoms.slice(1+ui*3, 1+ui*3+3);
+                    termO.forEach((o,i)=>{
+                        let angle = baseAngle + (i-1)*0.85;
+                        let order = i<2 ? 2 : 1;
+                        let oi = pushAtom('O', lonePairOnlyShells(o.shells, estimateLonePairs('O', order)), order===1?-1:0);
+                        atoms3D[oi].pos = [atoms3D[ci].pos[0]+Math.cos(angle)*bondLen, Math.sin(angle)*bondLen, (i-1)*0.9];
+                        bonds3D.push({a:ci, b:oi, order});
+                    });
+                });
+                metals.forEach((m,i)=>{
+                    let mi = pushAtom(m.data.sym, m.shells.slice(), (typeof ionCharge!=='undefined' && ionCharge[m.data.sym]) || 1);
+                    atoms3D[mi].pos = [(i-((metals.length-1)/2))*1.6, -2.6, 0];
+                });
+                return {atoms3D, bonds3D, geo:'دو چهاروجهی CrO4 با یک اکسیژن پل‌زن مشترک (دی‌کرومات)', title:'ساختار یونی'};
+            }
+
+            if(isPolyatomic && typeof findHeteroCenter==='function'){
+                let polyCenter = findHeteroCenter(nonmetals);
+                let polyOthers = nonmetals.filter(a=>a.id!==polyCenter.id);
+                let v = vsepr3(polyCenter.data.sym, polyOthers.length, false);
+                // توزیع مرتبهٔ پیوند بین اکسیژن‌های پیرامونی بر اساس ظرفیت مؤثر اتم مرکزی
+                // (مثلاً سولفات: ۲ پیوند دوگانه + ۲ یگانه، کربنات/نیترات: ۱ دوگانه + بقیه یگانه، فسفات: ۱ دوگانه + ۳ یگانه)
+                const _polyMaxV = {S:6, P:5, N:4, C:4, Cl:7, Cr:6, Mn:8, Se:6, Br:7, I:7};
+                let maxV = _polyMaxV[polyCenter.data.sym] || 4;
+                let freeV = maxV - polyOthers.length;
+                let bondOrders;
+                // اگر واکنش دوبعدی قبلاً اجرا شده، هر اکسیژن بار واقعی خودش را دارد (چون واقعاً الکترون گرفته)؛
+                // همان‌ها را تک‌پیوندی نشان بده (نه یک انتخاب دلخواه بر اساس اندیس آرایه)
+                // در هر حالت، هیدروژن هرگز نمی‌تواند پیوند دوگانه داشته باشد (فقط یک الکترون/یک اوربیتال دارد)
+                if(polyOthers.some(a=>a.charge)){
+                    bondOrders = polyOthers.map(a => (a.data.sym==='H' || a.charge) ? 1 : 2);
+                } else {
+                    bondOrders = polyOthers.map(()=>1);
+                    for(let k=0;k<bondOrders.length && freeV>0;k++){ if(polyOthers[k].data.sym!=='H'){ bondOrders[k]=2; freeV--; } }
+                }
+                let centerTotalBondOrder = bondOrders.reduce((s,o)=>s+o, 0);
+                let ci = pushAtom(polyCenter.data.sym, lonePairOnlyShells(polyCenter.shells, estimateLonePairs(polyCenter.data.sym, centerTotalBondOrder)), polyCenter.charge||0);
+                atoms3D[ci].pos = [0,0,0];
+                polyOthers.forEach((a,i)=>{
+                    let vec = v.vecs[i] || [0,0,1];
+                    // اکسیژن تک‌پیوندی همیشه بار فرمال −۱ دارد (ساختار لوویس استاندارد)؛ اگر واکنش دوبعدی
+                    // واقعاً الکترون به این اتم داده، همان بار واقعی را نشان بده، وگرنه از قاعدهٔ استاندارد استفاده کن
+                    let dispCharge = a.charge || (bondOrders[i]===1 && a.data.sym!=='H' ? -1 : 0);
+                    let idx = pushAtom(a.data.sym, lonePairOnlyShells(a.shells, estimateLonePairs('O', bondOrders[i])), dispCharge);
+                    atoms3D[idx].pos = [vec[0]*bondLen, vec[1]*bondLen, vec[2]*bondLen];
+                    bonds3D.push({a:ci, b:idx, order: bondOrders[i]});
+                });
+                // بار کل بنیان (مثلاً سولفات -۲) و بار متناظر کاتیون فلزی
+                let nmSig = getSig(nonmetals.map(a=>a.data.sym));
+                let groupCharge = (typeof polyatomicCharge!=='undefined' && polyatomicCharge[nmSig]!==undefined) ? polyatomicCharge[nmSig]
+                    : nonmetals.reduce((s,a)=>s+elecNeed(a), 0);
+                let metalCharge = Math.ceil(groupCharge / metals.length);
+                // فلز(ها): در کنار بنیان، جدا از آن — با خط‌چین (نمایانگر جاذبهٔ الکترواستاتیک، نه پیوند اشتراکی)
+                metals.forEach((m,i)=>{
+                    let mi = pushAtom(m.data.sym, m.shells.slice(), metalCharge);
+                    atoms3D[mi].pos = [-(bondLen*2.6), (i - (metals.length-1)/2)*1.3, 0];
+                    bonds3D.push({a:ci, b:mi, ionic:true});
+                });
+                return {atoms3D, bonds3D, geo: 'یونی با بنیان چنداتمی - ' + v.geo + ` | بار کل بنیان: ${groupCharge}−`, title: 'ساختار یونی'};
+            } else {
+                // ---- ترکیب یونی سادهٔ دوتایی/سه‌تایی (مثل MgCl2, AlCl3, Mg3P2, Fe2O3) ----
+                let center = metals[0];
+                let extraMetals = metals.slice(1); // اگر بیش از یک اتم فلز باشد (مثل Mg3P2: سه Mg)، همهٔ آن‌ها کاتیون‌اند، نه آنیون!
+                let others = nonmetals; // فقط نافلزها آنیون محسوب می‌شوند — هرگز اتم فلز دیگری اینجا قرار نگیرد
+                let v = vsepr3(center.data.sym, others.length, true);
+                let totalNeed = others.reduce((s,a)=>s+elecNeed(a), 0);
+                let metalCharge = (typeof ionCharge!=='undefined' && ionCharge[center.data.sym]) || Math.ceil(totalNeed/metals.length) || 1;
+                let ci = pushAtom(center.data.sym, center.shells.slice(), metalCharge);
+                atoms3D[ci].pos = [0,0,0];
+                others.forEach((a,i)=>{
+                    let vec = v.vecs[i] || [0,0,1];
+                    let anionCharge = -((typeof ionCharge!=='undefined' && ionCharge[a.data.sym]) || elecNeed(a));
+                    let idx = pushAtom(a.data.sym, a.shells.slice(), anionCharge);
+                    atoms3D[idx].pos = [vec[0]*bondLen*1.4, vec[1]*bondLen*1.4, vec[2]*bondLen*1.4];
+                    // پیوند یونی = جاذبهٔ الکترواستاتیک بین یون‌های از قبل باردار، نه جفت‌الکترون اشتراکی؛ خط‌چین می‌کشیم نه استوانهٔ پیوند کووالانسی
+                    bonds3D.push({a:ci, b:idx, ionic:true});
+                });
+                // اتم‌های فلزی اضافی (وقتی بیش از یک اتم فلز در ترکیب باشد): همگی کاتیون‌اند، کنار مرکز قرار می‌گیرند
+                extraMetals.forEach((m,i)=>{
+                    let mi = pushAtom(m.data.sym, m.shells.slice(), metalCharge);
+                    atoms3D[mi].pos = [-(bondLen*1.8*(i+1)), 0, 0];
+                    bonds3D.push({a:ci, b:mi, ionic:true});
+                });
+                return {atoms3D, bonds3D, geo: v.geo + ' (یونی — خط‌چین = جاذبهٔ الکترواستاتیک)', title: 'ساختار یونی'};
+            }
+        }
+
+        // ---- مولکول کووالانسی خالص ----
+        let backboneCount = nonmetals.filter(a => (typicalValence[a.data.sym]||1) >= 2).length;
+        let symsAll = nonmetals.map(a=>a.data.sym);
+        let hasHAll = symsAll.includes('H');
+        let uniqueHeavyAll = [...new Set(symsAll.filter(s=>s!=='H'))];
+        // مولکول‌های ساده‌ی «تک‌مرکزی واقعی» حتی اگر چند اتم پرظرفیت داشته باشند (مثل CO2, O3, SO2, SO3, NO2, N2O, O2, N2)
+        // باید از موتور لوویس (با مرتبهٔ پیوند درست، شامل دوگانه/سه‌گانه) استفاده کنند، نه از اسکلت زنجیره‌ای عمومی
+        let simpleCentral = !hasHAll && nonmetals.length <= 5 && uniqueHeavyAll.length <= 2;
+        if(backboneCount < 2 || simpleCentral){
+            // تک‌مرکزی: از موتور لوویس موجود استفاده کن (شامل بار فرمال واقعی و مرتبهٔ پیوند درست)
+            let syms = symsAll;
+            let L = computeLewis(syms);
+            let v = vsepr3(syms[L.center], L.terminals.length, false);
+            let ci = pushAtom(syms[L.center], lonePairOnlyShells(nonmetals[L.center].shells, L.lonePairs[L.center]), (L.formalCharge&&L.formalCharge[L.center])||0);
+            atoms3D[ci].pos = [0,0,0];
+            L.terminals.forEach((t,i)=>{
+                let vec = v.vecs[i] || [0,0,1];
+                let idx = pushAtom(syms[t], lonePairOnlyShells(nonmetals[t].shells, L.lonePairs[t]), (L.formalCharge&&L.formalCharge[t])||0);
+                atoms3D[idx].pos = [vec[0]*bondLen, vec[1]*bondLen, vec[2]*bondLen];
+                bonds3D.push({a:ci, b:idx, order: L.bonds[t]||1});
+            });
+            return {atoms3D, bonds3D, geo:v.geo, title:'مولکول کووالانسی'};
+        }
+
+        // چندمرکزی: بنزن؟ اکسو-اسید؟ یا اسکلت عمومی؟
+        if(typeof isBenzenePattern==='function' && isBenzenePattern(nonmetals)){
+            let ringR = 1.4, hDist = 1.1;
+            let cIdxs = [];
+            for(let k=0;k<6;k++){
+                let angle = -Math.PI/2 + k*(Math.PI*2/6);
+                let ci = pushAtom('C', lonePairOnlyShells(defaultShells('C'), 0), 0);
+                atoms3D[ci].pos = [Math.cos(angle)*ringR, Math.sin(angle)*ringR, 0];
+                cIdxs.push(ci);
+            }
+            for(let k=0;k<6;k++){
+                bonds3D.push({a:cIdxs[k], b:cIdxs[(k+1)%6], order:(k%2===0)?2:1});
+                let angle = -Math.PI/2 + k*(Math.PI*2/6);
+                let hi = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+                atoms3D[hi].pos = [Math.cos(angle)*(ringR+hDist), Math.sin(angle)*(ringR+hDist), 0];
+                bonds3D.push({a:cIdxs[k], b:hi, order:1});
+            }
+            return {atoms3D, bonds3D, geo:'حلقهٔ آروماتیک (بنزن، ککوله، مسطح)', title:'مولکول کووالانسی'};
+        }
+
+        if(typeof isToluenePattern==='function' && isToluenePattern(nonmetals)){
+            let ringR = 1.4, hDist = 1.1;
+            let cIdxs = [];
+            for(let k=0;k<6;k++){
+                let angle = -Math.PI/2 + k*(Math.PI*2/6);
+                let ci = pushAtom('C', lonePairOnlyShells(defaultShells('C'), 0), 0);
+                atoms3D[ci].pos = [Math.cos(angle)*ringR, Math.sin(angle)*ringR, 0];
+                cIdxs.push(ci);
+            }
+            for(let k=0;k<6;k++) bonds3D.push({a:cIdxs[k], b:cIdxs[(k+1)%6], order:(k%2===0)?2:1});
+            // کربن حلقهٔ شمارهٔ ۰ به‌جای H، به گروه متیل وصل است
+            let methylAngle = -Math.PI/2;
+            let mc = pushAtom('C', lonePairOnlyShells(defaultShells('C'), 0), 0);
+            atoms3D[mc].pos = [Math.cos(methylAngle)*(ringR+hDist*1.3), Math.sin(methylAngle)*(ringR+hDist*1.3), 0];
+            bonds3D.push({a:cIdxs[0], b:mc, order:1});
+            const methylHDirs = [[0.55,0.55,0.62],[-0.75,0.2,0.62],[0.2,-0.75,-0.62]];
+            methylHDirs.forEach(d=>{
+                let hi = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+                atoms3D[hi].pos = [atoms3D[mc].pos[0]+d[0]*1.1, atoms3D[mc].pos[1]+d[1]*1.1, d[2]*1.1];
+                bonds3D.push({a:mc, b:hi, order:1});
+            });
+            // ۵ کربن دیگر حلقه هرکدام یک H دارند
+            for(let k=1;k<6;k++){
+                let angle = -Math.PI/2 + k*(Math.PI*2/6);
+                let hi = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+                atoms3D[hi].pos = [Math.cos(angle)*(ringR+hDist), Math.sin(angle)*(ringR+hDist), 0];
+                bonds3D.push({a:cIdxs[k], b:hi, order:1});
+            }
+            return {atoms3D, bonds3D, geo:'حلقهٔ آروماتیک با گروه متیل (تولوئن)', title:'مولکول کووالانسی'};
+        }
+
+        if(typeof isOxoacidPattern==='function' && isOxoacidPattern(nonmetals)){
+            let g = buildOxoacidGraph(nonmetals);
+            let syms = nonmetals.map(a=>a.data.sym);
+            let allO = [...g.bridgeO, ...g.terminalO];
+            let v = vsepr3(syms[g.center], allO.length, false);
+            let bondSum = {};
+            g.bonds.forEach(b=>{ bondSum[b.a]=(bondSum[b.a]||0)+b.order; bondSum[b.b]=(bondSum[b.b]||0)+b.order; });
+            let idxMap = {};
+            idxMap[g.center] = pushAtom(syms[g.center], lonePairOnlyShells(nonmetals[g.center].shells, estimateLonePairs(syms[g.center], bondSum[g.center]||0)), 0);
+            atoms3D[idxMap[g.center]].pos = [0,0,0];
+            allO.forEach((oi,i)=>{
+                let vec = v.vecs[i] || [0,0,1];
+                idxMap[oi] = pushAtom('O', lonePairOnlyShells(defaultShells('O'), estimateLonePairs('O', bondSum[oi]||0)), 0);
+                atoms3D[idxMap[oi]].pos = [vec[0]*bondLen, vec[1]*bondLen, vec[2]*bondLen];
+            });
+            g.bonds.forEach(b=>{
+                let aIdx = idxMap[b.a] !== undefined ? idxMap[b.a] : null;
+                let bIdx = idxMap[b.b] !== undefined ? idxMap[b.b] : null;
+                if(syms[b.b]==='H' && idxMap[b.b]===undefined){
+                    // هیدروژن متصل به یک اکسیژن پل: در امتداد شعاعی همان اکسیژن قرار بگیر (بدون الکترون مداری، چون پیوندش با خط پیوند نشان داده می‌شود)
+                    let op = atoms3D[idxMap[b.a]].pos;
+                    let norm = norm3(op);
+                    idxMap[b.b] = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+                    atoms3D[idxMap[b.b]].pos = [op[0]+norm[0]*0.95, op[1]+norm[1]*0.95, op[2]+norm[2]*0.95];
+                    bIdx = idxMap[b.b];
+                }
+                if(aIdx!==null && bIdx!==null) bonds3D.push({a:aIdx, b:bIdx, order:b.order});
+            });
+            return {atoms3D, bonds3D, geo:'اکسو-اسید (گروه هیدروکسیل + اکسیژن دوگانه) - '+v.geo, title:'مولکول کووالانسی'};
+        }
+
+        if(typeof isDiboranePattern==='function' && isDiboranePattern(nonmetals)){
+            // دی‌بوران: دو هیدروژن پل‌زن هرکدام هم‌زمان به هر دو بور وصل‌اند (پیوند سه‌مرکزی-دوالکترونی)
+            let bLen = 1.8, bridgeOffset = 0.85, tdx = 0.75, tdy = 1.1;
+            let b0 = pushAtom('B', lonePairOnlyShells(defaultShells('B'), 0), 0);
+            let b1 = pushAtom('B', lonePairOnlyShells(defaultShells('B'), 0), 0);
+            atoms3D[b0].pos = [-bLen/2, 0, 0];
+            atoms3D[b1].pos = [bLen/2, 0, 0];
+            let hb0 = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+            let hb1 = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+            atoms3D[hb0].pos = [0, bridgeOffset, 0];
+            atoms3D[hb1].pos = [0, -bridgeOffset, 0];
+            bonds3D.push({a:b0,b:hb0,order:1},{a:b1,b:hb0,order:1},{a:b0,b:hb1,order:1},{a:b1,b:hb1,order:1});
+            let termOffsets = [[-tdx,tdy*0.4,tdy*0.9],[-tdx,tdy*0.4,-tdy*0.9],[tdx,tdy*0.4,tdy*0.9],[tdx,tdy*0.4,-tdy*0.9]];
+            let termParents = [b0,b0,b1,b1];
+            termOffsets.forEach((off,i)=>{
+                let hi = pushAtom('H', lonePairOnlyShells(defaultShells('H'), 0), 0);
+                let bp = atoms3D[termParents[i]].pos;
+                atoms3D[hi].pos = [bp[0]+off[0], bp[1]+off[1], bp[2]+off[2]];
+                bonds3D.push({a:termParents[i], b:hi, order:1});
+            });
+            return {atoms3D, bonds3D, geo:'پیوند پل‌زن سه‌مرکزی-دوالکترونی (دی‌بوران)', title:'مولکول کووالانسی'};
+        }
+
+        // اسکلت عمومی آلی (اتان، پروپان، اتانول و ...): زیگزاگ سه‌بعدی با استخلاف‌های چهاروجهی
+        // چند مورد استثنا دارند که الگوریتم عمومی اتصال اشتباه می‌سازد؛ برای آن‌ها سازندهٔ اختصاصی داریم
+        let graph;
+        if(typeof isPropynePattern==='function' && isPropynePattern(nonmetals)) graph = buildPropyneGraph(nonmetals);
+        else if(typeof isMethanolPattern==='function' && isMethanolPattern(nonmetals)) graph = buildMethanolGraph(nonmetals);
+        else if(typeof isFormaldehydePattern==='function' && isFormaldehydePattern(nonmetals)) graph = buildFormaldehydeGraph(nonmetals);
+        else if(typeof isFormicAcidPattern==='function' && isFormicAcidPattern(nonmetals)) graph = buildFormicAcidGraph(nonmetals);
+        else if(typeof isAceticAcidPattern==='function' && isAceticAcidPattern(nonmetals)) graph = buildAceticAcidGraph(nonmetals);
+        else graph = buildMolecularGraph(nonmetals);
+        let syms = nonmetals.map(a=>a.data.sym);
+        let bondSumGeneric = {};
+        graph.bonds.forEach(b=>{ bondSumGeneric[b.a]=(bondSumGeneric[b.a]||0)+(b.order||1); bondSumGeneric[b.b]=(bondSumGeneric[b.b]||0)+(b.order||1); });
+        let idxMap = {};
+        graph.backbone.forEach((bi,i)=>{
+            idxMap[bi] = pushAtom(syms[bi], lonePairOnlyShells(nonmetals[bi].shells, estimateLonePairs(syms[bi], bondSumGeneric[bi]||0)), 0);
+            let x = (i - (graph.backbone.length-1)/2) * bondLen * 0.9;
+            let y = (i % 2 === 0) ? 0.28 : -0.28;
+            atoms3D[idxMap[bi]].pos = [x, y, 0];
+        });
+        const branchDirs = [[0,0.75,0.66],[0,-0.75,0.66],[0,0.55,-0.83],[0,-0.55,-0.83]];
+        graph.backbone.forEach((bi)=>{
+            let neighbors = graph.bonds.filter(b=>b.a===bi||b.b===bi).map(b=>b.a===bi?b.b:b.a).filter(ni=>!graph.backbone.includes(ni));
+            neighbors.forEach((ni,k)=>{
+                let d = branchDirs[k % branchDirs.length];
+                let nBond = graph.bonds.find(b=>(b.a===bi&&b.b===ni)||(b.b===bi&&b.a===ni));
+                idxMap[ni] = pushAtom(syms[ni], lonePairOnlyShells(nonmetals[ni].shells, estimateLonePairs(syms[ni], (nBond&&nBond.order)||1)), 0);
+                atoms3D[idxMap[ni]].pos = [atoms3D[idxMap[bi]].pos[0]+d[0]*bondLen, atoms3D[idxMap[bi]].pos[1]+d[1]*bondLen, d[2]*bondLen];
+            });
+        });
+        graph.bonds.forEach(b=>{
+            if(idxMap[b.a]!==undefined && idxMap[b.b]!==undefined) bonds3D.push({a:idxMap[b.a], b:idxMap[b.b], order:b.order||1});
+        });
+        return {atoms3D, bonds3D, geo:'اسکلت مولکولی (زیگزاگ سه‌بعدی)', title:'مولکول کووالانسی'};
+    }
+
+    // ==== موتور رندر Three.js ====
+    let scene, camera, renderer, moleculeGroup, container;
+    let dragging=false, lastX=0, lastY=0, camDist=8;
+    let labelSprites = [];
+
+    function initThree(){
+        container = document.getElementById('threeContainer');
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 100);
+        renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio||1);
+        container.innerHTML='';
+        container.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0x8899aa, 0.9));
+        let key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(5,6,7); scene.add(key);
+        let rim = new THREE.DirectionalLight(0x66aaff, 0.6); rim.position.set(-5,-3,-6); scene.add(rim);
+
+        moleculeGroup = new THREE.Group();
+        scene.add(moleculeGroup);
+
+        // چرخش با ماوس/لمس: به‌جای حرکت دوربین روی مختصات کروی (که عمودی رو به ۱۸۰ درجه محدود می‌کرد)،
+        // خود مولکول را با کواترنیون می‌چرخانیم — این‌طوری هم افقی و هم عمودی کاملاً ۳۶۰ درجه و بدون پرش می‌چرخد
+        function rotateBy(dx, dy){
+            let qy = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), dx*0.008);
+            let qx = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), dy*0.008);
+            moleculeGroup.quaternion.premultiply(qy).premultiply(qx);
+        }
+        container.onmousedown = e=>{dragging=true; lastX=e.clientX; lastY=e.clientY; container.style.cursor='grabbing';};
+        window.addEventListener('mouseup', ()=>{dragging=false; if(container) container.style.cursor='grab';});
+        window.addEventListener('mousemove', e=>{
+            if(!dragging) return;
+            rotateBy(e.clientX-lastX, e.clientY-lastY);
+            lastX=e.clientX; lastY=e.clientY;
+        });
+        container.onwheel = e=>{ e.preventDefault(); camDist += e.deltaY*0.003; camDist = Math.max(3, Math.min(20, camDist)); };
+        // لمسی (موبایل)
+        container.ontouchstart = e=>{ if(e.touches.length===1){dragging=true; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;} };
+        container.ontouchmove = e=>{ if(dragging && e.touches.length===1){ e.preventDefault(); rotateBy(e.touches[0].clientX-lastX, e.touches[0].clientY-lastY); lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; } };
+        container.ontouchend = ()=>{dragging=false;};
+
+        // چرخش اولیهٔ ملایم برای دید بهتر در شروع
+        moleculeGroup.quaternion.setFromEuler(new THREE.Euler(0.4, 0.6, 0));
+
+        animate3D();
+    }
+
+    function animate3D(){
+        if(!document.getElementById('modal3D') || document.getElementById('modal3D').style.display==='none') return;
+        requestAnimationFrame(animate3D);
+        camera.position.set(0, 0, camDist);
+        camera.lookAt(0,0,0);
+        // برچسب‌ها را هر فریم کمی روبه‌دوربین (در فضای محلی چرخیده) جابه‌جا کن تا از سطح خودِ اتم بیرون بمانند
+        // ولی همچنان تست عمق واقعی داشته باشند و پشت اتم‌های جلوترِ دیگر پنهان شوند
+        if(moleculeGroup && labelSprites.length){
+            let invQuat = moleculeGroup.quaternion.clone().invert();
+            let worldToCam = new THREE.Vector3(0,0,1).applyQuaternion(invQuat);
+            labelSprites.forEach(ls=>{
+                let dir = ls.angOffset ? worldToCam.clone().applyAxisAngle(new THREE.Vector3(0,1,0), ls.angOffset) : worldToCam;
+                ls.sprite.position.copy(dir.clone().multiplyScalar(ls.radius));
+            });
+        }
+        renderer.render(scene, camera);
+    }
+
+    function bondColor(sym1, sym2){
+        return 0xdddddd;
+    }
+
+    // جهت میانگین پیوند(های) یک اتم را پیدا کن — برای چرخاندن مدارهای الکترونی عمود بر همان جهت
+    // (تا الکترون‌های جفت آزاد روی خط پیوند نیفتند و با الکترون پیوندی اشتباه گرفته نشوند)
+    function atomBondDirection(atomIdx, atoms3D, bonds3D){
+        let sum = new THREE.Vector3(); let n=0;
+        bonds3D.forEach(b=>{
+            if(b.a!==atomIdx && b.b!==atomIdx) return;
+            let other = b.a===atomIdx ? b.b : b.a;
+            let pa = atoms3D[atomIdx].pos, pb = atoms3D[other].pos;
+            let d = new THREE.Vector3(pb[0]-pa[0], pb[1]-pa[1], pb[2]-pa[2]);
+            if(d.lengthSq()>1e-8){ sum.add(d.normalize()); n++; }
+        });
+        if(n===0) return new THREE.Vector3(0,1,0);
+        if(sum.lengthSq()<1e-6) { // پیوندهای خطی مخالف هم (مثلاً اتم مرکزی خطی): از جهت اولین پیوند استفاده کن
+            for(let b of bonds3D){ if(b.a===atomIdx||b.b===atomIdx){ let other=b.a===atomIdx?b.b:b.a; let pa=atoms3D[atomIdx].pos, pb=atoms3D[other].pos; return new THREE.Vector3(pb[0]-pa[0],pb[1]-pa[1],pb[2]-pa[2]).normalize(); } }
+        }
+        return sum.normalize();
+    }
+
+    function renderMolecule3D(data){
+        while(moleculeGroup.children.length) moleculeGroup.remove(moleculeGroup.children[0]);
+        labelSprites = [];
+        data.atoms3D.forEach((a, atomIdx)=>{
+            let st = styleOf(a.sym);
+            let atomGroup = new THREE.Group();
+            atomGroup.position.set(a.pos[0], a.pos[1], a.pos[2]);
+
+            // کرهٔ اتم
+            let geo = new THREE.SphereGeometry(st.r, 28, 22);
+            let mat = new THREE.MeshStandardMaterial({color: st.c, roughness:0.4, metalness:0.1});
+            let mesh = new THREE.Mesh(geo, mat);
+            atomGroup.add(mesh);
+
+            // برچسب نماد عنصر — بیلبورد (همیشه رو به دوربین)، اما با تست عمق واقعی
+            // تا وقتی اتم دیگری جلوتر است، برچسب پشت آن پنهان شود و روی اتم اشتباه نیفتد
+            let label = makeTextSprite(a.sym, {size:96, color: textColorFor(st.c), fontSize:56});
+            let labelScale = st.r*1.15;
+            label.scale.set(labelScale, labelScale, 1);
+            atomGroup.add(label);
+            labelSprites.push({sprite:label, radius:st.r*1.02});
+
+            // برچسب بار یونی (فقط اگر بار صفر نباشد) — همین‌طور با تست عمق واقعی
+            if(a.charge){
+                let mag = Math.abs(a.charge)>1 ? Math.abs(a.charge) : '';
+                let txt = a.charge>0 ? (mag+'+') : (mag+'−');
+                let badge = makeTextSprite(txt, {size:80, bg: a.charge>0?'#2f6fed':'#e33d3d', border:'#fff', color:'#fff', fontSize:46});
+                let bs = st.r*0.62;
+                badge.scale.set(bs,bs,1);
+                atomGroup.add(badge);
+                labelSprites.push({sprite:badge, radius:st.r*1.35, angOffset:0.55});
+            }
+
+            // مدارهای الکترونی (مدل بور) + الکترون‌ها روی هر مدار — عمود بر جهت پیوند چرخانده می‌شوند
+            // (مثل یقه‌ای دور محور پیوند) تا هرگز روی خط پیوند نیفتند و با الکترون پیوندی قاطی نشوند
+            if(a.shells && a.shells.length){
+                let bondDir = atomBondDirection(atomIdx, data.atoms3D, data.bonds3D);
+                let ringQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0), bondDir);
+                let shellGap = Math.max(0.16, st.r*0.32);
+                a.shells.forEach((count, si)=>{
+                    if(count<=0) return;
+                    let ringR = st.r + (si+1)*shellGap;
+                    let shellGroup = new THREE.Group();
+                    shellGroup.add(makeOrbitRing(ringR, 0x7fd4ff));
+                    for(let e=0;e<count;e++){
+                        let ang = (e/count)*Math.PI*2;
+                        let eGeo = new THREE.SphereGeometry(Math.max(0.035, st.r*0.09), 8, 8);
+                        let eMat = new THREE.MeshBasicMaterial({color:0xfff066});
+                        let eMesh = new THREE.Mesh(eGeo, eMat);
+                        eMesh.position.set(Math.cos(ang)*ringR, 0, Math.sin(ang)*ringR);
+                        shellGroup.add(eMesh);
+                    }
+                    shellGroup.quaternion.copy(ringQuat);
+                    atomGroup.add(shellGroup);
+                });
+            }
+
+            moleculeGroup.add(atomGroup);
+        });
+        data.bonds3D.forEach(b=>{
+            let pA = data.atoms3D[b.a].pos, pB = data.atoms3D[b.b].pos;
+            if(b.ionic){
+                // پیوند یونی: جاذبهٔ الکترواستاتیک بین یون‌های از قبل باردار — نه جفت‌الکترون اشتراکی
+                // پس با خط‌چین کم‌رنگ نشان می‌دهیم، نه استوانهٔ توپر مثل پیوند کووالانسی
+                let geo = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(pA[0],pA[1],pA[2]), new THREE.Vector3(pB[0],pB[1],pB[2])
+                ]);
+                let mat = new THREE.LineDashedMaterial({color:0xffd166, dashSize:0.14, gapSize:0.1, transparent:true, opacity:0.7, linewidth:1});
+                let line = new THREE.Line(geo, mat);
+                line.computeLineDistances();
+                moleculeGroup.add(line);
+                return;
+            }
+            let order = Math.round(b.order||1);
+            if(order<1) order=1; if(order>3) order=3;
+            let dir = new THREE.Vector3(pB[0]-pA[0], pB[1]-pA[1], pB[2]-pA[2]);
+            let len = dir.length();
+            let mid = new THREE.Vector3((pA[0]+pB[0])/2, (pA[1]+pB[1])/2, (pA[2]+pB[2])/2);
+            let up = new THREE.Vector3(0,1,0);
+            let quat = new THREE.Quaternion().setFromUnitVectors(up, dir.clone().normalize());
+            // بردار عمود بر پیوند برای جداسازی خطوط پیوند دوگانه/سه‌گانه
+            let perp = new THREE.Vector3(1,0,0);
+            if(Math.abs(dir.clone().normalize().dot(perp)) > 0.9) perp.set(0,0,1);
+            perp = new THREE.Vector3().crossVectors(dir, perp).normalize();
+            let offsets = order===1?[0]:(order===2?[-0.09,0.09]:[-0.14,0,0.14]);
+            offsets.forEach(off=>{
+                let cyl = new THREE.CylinderGeometry(0.055, 0.055, len*0.94, 10);
+                let mat = new THREE.MeshStandardMaterial({color:0xcfd8e3, roughness:0.5, metalness:0.1});
+                let mesh = new THREE.Mesh(cyl, mat);
+                mesh.quaternion.copy(quat);
+                let offsetVec = perp.clone().multiplyScalar(off);
+                mesh.position.set(mid.x+offsetVec.x, mid.y+offsetVec.y, mid.z+offsetVec.z);
+                moleculeGroup.add(mesh);
+            });
+        });
+        // مرکز صحنه را روی مرکز جرم مولکول تنظیم کن
+        let cx=0,cy=0,cz=0; data.atoms3D.forEach(a=>{cx+=a.pos[0];cy+=a.pos[1];cz+=a.pos[2];});
+        let n = data.atoms3D.length||1; cx/=n; cy/=n; cz/=n;
+        moleculeGroup.position.set(-cx,-cy,-cz);
+    }
+
+    window.open3DView = function(){
+        let data = build3DFromLabAtoms();
+        if(!data || data.atoms3D.length===0){
+            setStatus && setStatus('برای نمای سه‌بعدی، ابتدا یک ترکیب روی میز کار بساز.');
+            return;
+        }
+        document.getElementById('modal3D').style.display = 'flex';
+        document.getElementById('modal3DTitle').textContent = data.title || 'ساختار سه‌بعدی';
+        document.getElementById('modal3DGeo').textContent = 'هندسه: ' + (data.geo||'');
+
+        function afterThreeReady(){
+            try {
+                if(!renderer) initThree(); else animate3D();
+                setTimeout(()=>{
+                    if(container){ renderer.setSize(container.clientWidth, container.clientHeight); camera.aspect = container.clientWidth/container.clientHeight; camera.updateProjectionMatrix(); }
+                    renderMolecule3D(data);
+                }, 30);
+            } catch(err){
+                showThreeError('خطا در ساخت صحنهٔ سه‌بعدی: ' + err.message);
+                console.error(err);
+            }
+        }
+
+        if(typeof THREE === 'undefined'){
+            // کتابخانهٔ Three.js هنوز بارگذاری نشده — تلاش برای بارگذاری پویا از یک آدرس جایگزین
+            document.getElementById('threeContainer').innerHTML = '<div style="color:#9ab;text-align:center;padding-top:40%;font-size:0.95rem;">در حال بارگذاری موتور سه‌بعدی...</div>';
+            let s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
+            s.onload = afterThreeReady;
+            s.onerror = function(){
+                showThreeError('اتصال به کتابخانهٔ سه‌بعدی برقرار نشد. اتصال اینترنت را بررسی کن و دوباره تلاش کن.');
+            };
+            document.head.appendChild(s);
+        } else {
+            afterThreeReady();
+        }
+    };
+    function showThreeError(msg){
+        let c = document.getElementById('threeContainer');
+        if(c) c.innerHTML = '<div style="color:#f88;text-align:center;padding-top:35%;font-size:0.95rem; line-height:2;">⚠️ '+msg+'</div>';
+    }
+    window.close3DView = function(){
+        document.getElementById('modal3D').style.display = 'none';
+    };
+})();
+</script>
+</body>
+</html>
