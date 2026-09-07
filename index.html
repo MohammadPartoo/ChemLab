@@ -29,8 +29,9 @@
         .app-header { width: 100%; height: 140px; flex-shrink: 0; border-bottom: 2px solid var(--neon-cyan); box-shadow: 0 5px 20px rgba(0, 243, 255, 0.15); z-index: 10; background: #fff; overflow: hidden; }
         .app-header img { width: 100%; height: 100%; object-fit: fill; display: block; }
         
-        .workspace { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 0; }
+        .workspace { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; perspective: 900px; }
+        .workspace::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2; background: radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.55) 100%); }
+        .grid-bg { position: absolute; inset: -20% -20% -20% -20%; background-image: linear-gradient(rgba(0,243,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,243,255,0.06) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 0; -webkit-mask-image: radial-gradient(circle at 50% 45%, black 0%, transparent 72%); mask-image: radial-gradient(circle at 50% 45%, black 0%, transparent 72%); transform: rotateX(58deg) translateZ(-80px); transform-origin: 50% 50%; }
         canvas { width: 100%; height: 100%; position: relative; z-index: 1; display: block; }
         
         /* --- SIDEBAR COMPONENTS --- */
@@ -1357,12 +1358,45 @@
     const canvas = document.getElementById('labCanvas');
     const ctx = canvas.getContext('2d');
     let W, H;
-    function resize() { W=canvas.width=canvas.parentElement.clientWidth; H=canvas.height=canvas.parentElement.clientHeight; }
-    window.addEventListener('resize', resize); resize();
+    function resize() { W=canvas.width=canvas.parentElement.clientWidth; H=canvas.height=canvas.parentElement.clientHeight; initStars(); }
+    window.addEventListener('resize', resize);
 
     const catColors = { 'alkali':'#ff3366', 'alkaline':'#ff9933', 'transition':'#ffcc00', 'nonmetal':'#00e676', 'halogen':'#00e5ff', 'noble':'#b000ff', 'metalloid':'#00bfa5', 'other':'#f50057' };
     let labAtoms = []; let movingElectrons = []; let appState = 'idle';
     let reactionFX = []; // ذرات افکت واکنش (جرقه، حباب، درخشش)
+
+    /* ==========================================
+       ابزارهای کمکی گرافیک شبه‌سه‌بعدی
+       ========================================== */
+    // روشن/تیره کردن یک رنگ هگز برای ساخت گرادیان‌های حجم‌دار (نورپردازی کره‌ای)
+    function shadeColor(hex, percent){
+        let f = parseInt(hex.slice(1),16), t = percent<0 ? 0 : 255, p = Math.abs(percent)/100;
+        let R = f>>16, G = f>>8 & 0x00FF, B = f & 0x0000FF;
+        return "#"+(0x1000000+(Math.round((t-R)*p)+R)*0x10000+(Math.round((t-G)*p)+G)*0x100+(Math.round((t-B)*p)+B)).toString(16).slice(1);
+    }
+
+    // میدان ستاره‌های پس‌زمینه با پارالاکس و چشمک‌زدن برای عمق بصری صحنه
+    let stars = [];
+    function initStars(){
+        stars = [];
+        let count = Math.max(40, Math.floor((W*H)/9000));
+        for(let i=0;i<count;i++){
+            stars.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+0.4, phase:Math.random()*Math.PI*2, speed:0.3+Math.random()*0.7, depth:0.3+Math.random()*0.7 });
+        }
+    }
+    function drawStars(){
+        let t = Date.now()/1000;
+        for(let s of stars){
+            let tw = 0.35 + 0.65*((Math.sin(t*s.speed + s.phase)+1)/2);
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r*s.depth, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(180,230,255,${(tw*0.7*s.depth).toFixed(3)})`;
+            ctx.shadowBlur = 6*s.depth; ctx.shadowColor = 'rgba(0,243,255,0.6)';
+            ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+    }
+    resize();
 
     /* ==========================================
        افکت‌های بصری مخصوص نوع واکنش
@@ -1391,9 +1425,17 @@
             this.life-=this.decay;
             if(this.life<=0) return true;
             ctx.save(); ctx.globalAlpha=Math.max(0,this.life);
-            ctx.beginPath(); ctx.arc(this.x,this.y,this.size*(this.kind==='bubble'?this.life:1),0,Math.PI*2);
-            if(this.kind==='bubble'){ ctx.strokeStyle=this.color; ctx.lineWidth=1.5; ctx.stroke(); }
-            else { ctx.fillStyle=this.color; ctx.shadowBlur=12; ctx.shadowColor=this.color; ctx.fill(); }
+            let sz = this.size*(this.kind==='bubble'?this.life:1);
+            ctx.beginPath(); ctx.arc(this.x,this.y,sz,0,Math.PI*2);
+            if(this.kind==='bubble'){
+                ctx.strokeStyle=this.color; ctx.lineWidth=1.5; ctx.stroke();
+                ctx.beginPath(); ctx.arc(this.x-sz*0.3, this.y-sz*0.3, sz*0.28, 0, Math.PI*2);
+                ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.fill();
+            } else {
+                let pg = ctx.createRadialGradient(this.x-sz*0.3, this.y-sz*0.3, 0, this.x, this.y, sz);
+                pg.addColorStop(0, '#ffffff'); pg.addColorStop(0.45, this.color); pg.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle=pg; ctx.shadowBlur=12; ctx.shadowColor=this.color; ctx.fill();
+            }
             ctx.restore();
             return false;
         }
@@ -1452,14 +1494,43 @@
             ctx.beginPath(); ctx.arc(this.x, this.y, this.radius + 20, 0, Math.PI*2); ctx.fill();
             ctx.globalAlpha = 1;
 
-            let grad = ctx.createLinearGradient(this.x - this.radius, this.y - this.radius, this.x + this.radius, this.y + this.radius);
-            grad.addColorStop(0, '#2a2a35'); grad.addColorStop(1, '#050509');
-            ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fill();
+            /* ---- بدنه‌ی کروی با نورپردازی حجم‌دار (شبه سه‌بعدی) ---- */
+            let lightX = this.x - this.radius*0.35, lightY = this.y - this.radius*0.42;
+            let sphereGrad = ctx.createRadialGradient(lightX, lightY, this.radius*0.05, this.x, this.y, this.radius*1.15);
+            sphereGrad.addColorStop(0, shadeColor(this.color, 55));
+            sphereGrad.addColorStop(0.45, shadeColor(this.color, -20));
+            sphereGrad.addColorStop(1, '#050509');
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            ctx.fillStyle = sphereGrad; ctx.fill();
+
+            // سایه‌ی حجمی سمت پایین/راست برای تقویت حس کرویت
+            ctx.save();
+            ctx.globalCompositeOperation = 'multiply';
+            let volShadow = ctx.createRadialGradient(this.x+this.radius*0.55, this.y+this.radius*0.55, 0, this.x, this.y, this.radius*1.3);
+            volShadow.addColorStop(0, 'rgba(0,0,0,0)');
+            volShadow.addColorStop(1, 'rgba(0,0,0,0.65)');
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            ctx.fillStyle = volShadow; ctx.fill();
+            ctx.restore();
+
+            // خط دور (rim light) با رنگ دسته‌ی عنصر
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
             ctx.strokeStyle = this.color; ctx.lineWidth = 2.5; ctx.stroke();
 
+            // درخشش شیشه‌ای (specular highlight) بالا-چپ، مثل نور تابیده به یک کره‌ی براق
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(lightX, lightY, this.radius*0.32, this.radius*0.2, -0.6, 0, Math.PI*2);
+            let specGrad = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, this.radius*0.35);
+            specGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
+            specGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = specGrad; ctx.fill();
+            ctx.restore();
+
             ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Tahoma'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(0,0,0,0.8)';
             ctx.fillText(this.data.sym, this.x, this.y + 1);
+            ctx.shadowBlur = 0;
 
             if(this.charge !== 0) {
                 let sign = this.charge>0 ? '+' : '-'; let val = Math.abs(this.charge)>1 ? Math.abs(this.charge) : '';
@@ -1467,25 +1538,44 @@
                 ctx.fillText(val+sign, this.x + this.radius + 12, this.y - this.radius + 5);
             }
 
+            /* ---- مدارهای الکترونی به‌صورت بیضی‌های کج‌شده برای حس عمق سه‌بعدی ---- */
             let t = Date.now()/1000;
             for(let i=0; i<this.shells.length; i++) {
                 if(this.shells[i]<=0) continue;
                 let r = this.radius + (i+1)*this.gap;
-                
-                ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI*2);
+                let tiltRy = r * (0.38 + (i%3)*0.09);           // فشردگی عمودی مدار → حس چرخش سه‌بعدی
+                let tiltRot = (i%2===0 ? -0.24 : 0.24) + i*0.035; // زاویه‌ی متفاوت هر لایه برای تنوع عمق
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(tiltRot);
+                ctx.beginPath(); ctx.ellipse(0, 0, r, tiltRy, 0, 0, Math.PI*2);
                 ctx.strokeStyle = 'rgba(0, 243, 255, 0.25)';
                 ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.stroke(); ctx.setLineDash([]);
-                
+                ctx.restore();
+
+                let cosT = Math.cos(tiltRot), sinT = Math.sin(tiltRot);
                 let speed = 0.8 - (i*0.1);
                 for(let j=0; j<this.shells[i]; j++) {
                     let a = this.angles[i][j] + (t * speed);
-                    let ex = this.x + Math.cos(a)*r; let ey = this.y + Math.sin(a)*r;
-                    
-                    ctx.beginPath(); ctx.arc(ex, ey, 4.5, 0, Math.PI*2);
-                    ctx.fillStyle = '#fff'; ctx.shadowBlur = 15; ctx.shadowColor = '#00f3ff';
-                    ctx.fill(); ctx.shadowBlur = 0;
+                    let depth = Math.sin(a); // مقدار شبه-عمق: -1 (پشت) تا 1 (جلو)
+                    let ex0 = Math.cos(a)*r, ey0 = Math.sin(a)*tiltRy;
+                    let ex = this.x + ex0*cosT - ey0*sinT;
+                    let ey = this.y + ex0*sinT + ey0*cosT;
+                    let dScale = 0.7 + (depth+1)/2*0.6;
+                    let dAlpha = 0.55 + (depth+1)/2*0.45;
+
+                    ctx.save();
+                    ctx.globalAlpha = dAlpha;
+                    let eGrad = ctx.createRadialGradient(ex-1.5, ey-1.5, 0, ex, ey, 4.5*dScale);
+                    eGrad.addColorStop(0, '#ffffff'); eGrad.addColorStop(1, '#00c3d8');
+                    ctx.beginPath(); ctx.arc(ex, ey, 4.5*dScale, 0, Math.PI*2);
+                    ctx.fillStyle = eGrad; ctx.shadowBlur = 15*dScale; ctx.shadowColor = '#00f3ff';
+                    ctx.fill();
+                    ctx.restore();
                 }
             }
+            ctx.shadowBlur = 0;
             ctx.restore();
         }
     }
@@ -2550,24 +2640,35 @@
     }
 
     // رسم یک پیوند بین دو اتم با مرتبه مشخص (تک/دوگانه/سه‌گانه/رزونانسی)
+    /* ---- رسم یک «لوله» پیوندی با نورپردازی عرضی، به‌جای خط تخت، برای حس استوانه‌ی سه‌بعدی ---- */
+    function drawTubeBond(x1, y1, x2, y2, width, color){
+        let dx = x2-x1, dy = y2-y1, len = Math.hypot(dx,dy)||1, nx = -dy/len, ny = dx/len;
+        let grad = ctx.createLinearGradient(x1+nx*width/2, y1+ny*width/2, x1-nx*width/2, y1-ny*width/2);
+        grad.addColorStop(0, 'rgba(255,255,255,0.10)');
+        grad.addColorStop(0.5, color);
+        grad.addColorStop(1, 'rgba(0,0,0,0.40)');
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+        ctx.strokeStyle = grad; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.stroke();
+        // نوار درخشان روی لبه‌ی بالای لوله برای حس براقیت استوانه‌ای
+        ctx.beginPath();
+        ctx.moveTo(x1+nx*width*0.18, y1+ny*width*0.18);
+        ctx.lineTo(x2+nx*width*0.18, y2+ny*width*0.18);
+        ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+        ctx.lineWidth = Math.max(1, width*0.18); ctx.lineCap = 'round'; ctx.stroke();
+    }
+
     function drawBondLine(center, a, order, baseColor){
         if(order === 1) {
-            ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y);
-            ctx.strokeStyle = baseColor; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
+            drawTubeBond(center.x, center.y, a.x, a.y, 12, baseColor);
         } else if(order === 2 || order === 1.5) {
             let dx = a.x - center.x, dy = a.y - center.y, len = Math.hypot(dx, dy)||1, nx = -dy/len*10, ny = dx/len*10;
-            ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny);
-            ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny);
-            ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+            drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 8, baseColor);
+            drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 8, baseColor);
         } else if(order === 3) {
             let dx = a.x - center.x, dy = a.y - center.y, len = Math.hypot(dx, dy)||1, nx = -dy/len*13, ny = dx/len*13;
-            ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y);
-            ctx.strokeStyle = baseColor; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny);
-            ctx.strokeStyle = baseColor; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny);
-            ctx.strokeStyle = baseColor; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+            drawTubeBond(center.x, center.y, a.x, a.y, 7, baseColor);
+            drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 7, baseColor);
+            drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 7, baseColor);
         }
     }
 
@@ -2577,6 +2678,7 @@
         if(modalOpen){ requestAnimationFrame(render); return; }
 
         ctx.clearRect(0,0,W,H);
+        drawStars();
         
         if(appState === 'bonded' || appState.includes('polyatomic') || appState.includes('covalent_share')) {
             let nms = labAtoms.filter(a=>a.type==='nonmetal');
@@ -2634,22 +2736,16 @@
                             let order = bondInfo ? bondInfo.order : 1;
                             
                             if(order === 1) {
-                                ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y);
-                                ctx.strokeStyle = baseColor; ctx.lineWidth = 15; ctx.lineCap = 'round'; ctx.stroke();
+                                drawTubeBond(center.x, center.y, a.x, a.y, 15, baseColor);
                             } else if(order === 2 || order === 1.5) {
                                 let dx = a.x - center.x; let dy = a.y - center.y; let len = Math.hypot(dx, dy); let nx = -dy/len * 12; let ny = dx/len * 12;
-                                ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny);
-                                ctx.strokeStyle = baseColor; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.stroke();
-                                ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny);
-                                ctx.strokeStyle = baseColor; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.stroke();
+                                drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 10, baseColor);
+                                drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 10, baseColor);
                             } else if(order === 3) {
                                 let dx = a.x - center.x; let dy = a.y - center.y; let len = Math.hypot(dx, dy); let nx = -dy/len * 15; let ny = dx/len * 15;
-                                ctx.beginPath(); ctx.moveTo(center.x, center.y); ctx.lineTo(a.x, a.y); 
-                                ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
-                                ctx.beginPath(); ctx.moveTo(center.x + nx, center.y + ny); ctx.lineTo(a.x + nx, a.y + ny); 
-                                ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
-                                ctx.beginPath(); ctx.moveTo(center.x - nx, center.y - ny); ctx.lineTo(a.x - nx, a.y - ny); 
-                                ctx.strokeStyle = baseColor; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.stroke();
+                                drawTubeBond(center.x, center.y, a.x, a.y, 8, baseColor);
+                                drawTubeBond(center.x + nx, center.y + ny, a.x + nx, a.y + ny, 8, baseColor);
+                                drawTubeBond(center.x - nx, center.y - ny, a.x - nx, a.y - ny, 8, baseColor);
                             }
                             
                             if (isSharing) {
